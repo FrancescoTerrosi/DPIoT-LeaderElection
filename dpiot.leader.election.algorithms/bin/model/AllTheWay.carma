@@ -1,0 +1,142 @@
+
+record ToForward = [int ID, int COUNT];
+
+fun list<ToForward> removeFirstElement(list<ToForward> pending){
+	list<ToForward> result = newList(ToForward);
+	if (size(pending) == 1){
+		return result;
+	}
+	for i from 1 to size(pending){
+		result = result + [:pending[i]:];
+	}
+	return result;
+}
+
+fun ToForward addElement(int id, int counter){
+	ToForward result := [ID := id,COUNT := counter];
+	return result;
+}
+
+const NODEZ = 100;
+
+
+component Agent(int zone){
+	store{
+		attrib int id = zone;
+		attrib int sizy = 1;
+		attrib zone := zone;
+		attrib right := (zone+1)%NODEZ;
+		attrib left := (zone+NODEZ-1)%NODEZ;
+		attrib list<ToForward> pending = newList(ToForward);
+		attrib int leader = id;
+		attrib bool known = false;
+		
+	}
+	behaviour{
+		IDLE = 
+			send[my.right == zone]<my.id,my.sizy>{}.ACTIVE
+			
+			+
+			
+			send[my.left == zone](anId,aCounter){
+				pending = pending +[:addElement(anId,aCounter):];
+			}.GO4LEADER;
+		
+		
+		ACTIVE =
+		
+		send[my.left == zone](anId,aCounter){
+			pending = pending +[:addElement(anId,aCounter):];
+		}.ACTIVE
+		
+		+
+		
+		[(size(my.pending) > 0) && (pending[0].ID == my.id)]check*{
+			my.known = true;
+		}.CHECK
+		
+		+
+		
+		
+// NON CREDO CHE SERVA!		
+//		[size(my.pending) > 0 && (pending[0].ID != my.id) && known]check*{}.CHECK
+//		
+//		+
+		
+		[(size(my.pending) > 0) && (pending[0].ID != my.id)]send[my.right == zone]<pending[0].ID,(pending[0].COUNT+1)>{
+			my.leader = min(pending[0].ID,my.leader);
+			my.sizy = my.sizy+1;
+			pending = removeFirstElement(pending);
+		}.ACTIVE;
+		
+		
+		CHECK = 
+			[my.sizy == my.pending[0].COUNT && my.leader == my.id]becomeLeader*{
+				pending = removeFirstElement(pending);
+			}.LEADER
+			
+			+
+			
+			[my.sizy == my.pending[0].COUNT && my.leader != my.id]becomeFollower*{
+				
+			}.FOLLOWER
+			
+			+
+			
+			[my.sizy != my.pending[0].COUNT]becomeFeederz*{}.ACTIVE
+			+
+			
+		send[my.left == zone](anId,aCounter){
+			pending = pending +[:addElement(anId,aCounter):];
+		}.CHECK;
+			
+			
+		LEADER = 
+
+			beLeader*{}.LEADER;
+		
+		FOLLOWER =
+		
+			beFollower*{}.FOLLOWER;	
+
+		GO4LEADER = 
+			send[my.left == zone](anId, aCounter){
+				pending = pending +[:addElement(anId,aCounter):];
+			}.GO4LEADER
+			+
+			send[my.right == zone]<my.id,my.sizy>{}.ACTIVE;
+	}
+	init{
+		IDLE
+	}
+}
+
+
+
+
+system AllTheWayInRing {	
+	collective {
+		for (i ; i < NODEZ ; 1) {
+			new Agent(i);
+		}
+	}	
+	environment {
+		store {
+			attrib int messages = 0;
+			}
+		update {
+			send{
+				messages = global.messages+1;
+			}
+		}
+	}
+}
+
+measure leader = #{Agent[LEADER] | true};
+measure followerz = #{Agent[FOLLOWER] | true};
+measure messages = global.messages;
+measure idlez = #{Agent[IDLE] | true};
+measure activez = #{Agent[ACTIVE] | true};
+measure checkz = #{Agent[CHECK] | true};
+measure go4leaderz = #{Agent[GO4LEADER] | true};
+
