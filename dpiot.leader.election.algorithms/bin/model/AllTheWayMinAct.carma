@@ -90,17 +90,18 @@ component Agent(int zone){
 			
 		LEADER = 
 
-			count[my.right == zone]<my.id,my.sizy>{}.LEADER
+			[!done]count[my.right == zone]<my.id,my.sizy>{}.LEADER
 			
 			+
 			
 			count[my.left == zone](anId,aCounter){
+				done = true;
 				my.sizy = aCounter;
 			}.LEADER;
 		
 		FOLLOWER =
 		
-			count[my.left == zone](anId,aCounter){
+			[size(my.pending) == 0]count[my.left == zone](anId,aCounter){
 				my.leader = min(my.leader,anId);
 				pending = pending +[:addElement(anId,aCounter):];
 			}.FOLLOWER
@@ -151,7 +152,7 @@ system AllTheWayInRing {
 	}
 }
 
-measure leader = #{Agent[LEADER] | true};
+measure leader = #{Agent[LEADER] | my.sizy == NODEZ};
 measure followerz = #{Agent[FOLLOWER] | true};
 measure messages = global.messages;
 measure idlez = #{Agent[IDLE] | true};

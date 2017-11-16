@@ -673,60 +673,74 @@ public class AllTheWayMinAct extends CarmaModel {
 				__STATE___Agent_CHECK );			
 		}
 		{
-			CarmaAction action = new CarmaOutput(
-				__ACT_NAME__count , __ACT__count , false  		
-			) {
-				
-				@Override
-				protected Object getValue(CarmaSystem sys, CarmaStore store, final double now) {
-					LinkedList<Object> toReturn = new LinkedList<Object>();
+			CarmaPredicate _FOO_predicate0 = new CarmaPredicate() {
+		
+				//@Override
+				public boolean satisfy(double now,CarmaStore store) {
 					final Node __MY__loc = store.get( "loc" , Node.class );
 					final Node __ATTR__loc = store.get( "loc" , Node.class );
-					Integer __MY__id = (Integer) store.get( "id" );
-					Integer __MY__sizy = (Integer) store.get( "sizy" );
-					toReturn.add( __MY__id );
-					toReturn.add( __MY__sizy );
-					return toReturn;
+					Boolean __ATTR__done = (Boolean) store.get( "done" );
+					return !( __ATTR__done );
 				}
-				
-				@Override
-				protected CarmaStoreUpdate getUpdate(CarmaSystem sys,  final double now ) {
-					return new CarmaStoreUpdate() {
-						
-						//@Override
-						public void update(RandomGenerator r, CarmaStore store) {
-							final Node __MY__loc = store.get( "loc" , Node.class );
-							final Node __ATTR__loc = store.get( "loc" , Node.class );
-						}
-					};
-				}
-				
-				@Override
-				protected CarmaPredicate getPredicate(CarmaSystem sys, final CarmaStore myStore) {
-					final Node __MY__loc = myStore.get( "loc" , Node.class );
-					Integer __MY__right = (Integer) myStore.get( "right" );
-					return new CarmaPredicate() {
-			
-						//@Override
-						public boolean satisfy(double now,CarmaStore store) {
-							try {
-								Node __ATTR__loc = store.get( "loc" , Node.class );
-								Integer __ATTR__zone = (Integer) store.get( "zone" );
-								return carmaEquals( __MY__right , __ATTR__zone );
-							} catch (NullPointerException e) {
-								return false;
-							}
-						}
-						
-					};
 					
-				}
-			};		
-			
-			_COMP_Agent.addTransition( 
-				__STATE___Agent_LEADER , 
-				action , 
-				__STATE___Agent_LEADER );			
+			};
+			{
+				CarmaAction action = new CarmaOutput(
+					__ACT_NAME__count , __ACT__count , false  		
+				) {
+					
+					@Override
+					protected Object getValue(CarmaSystem sys, CarmaStore store, final double now) {
+						LinkedList<Object> toReturn = new LinkedList<Object>();
+						final Node __MY__loc = store.get( "loc" , Node.class );
+						final Node __ATTR__loc = store.get( "loc" , Node.class );
+						Integer __MY__id = (Integer) store.get( "id" );
+						Integer __MY__sizy = (Integer) store.get( "sizy" );
+						toReturn.add( __MY__id );
+						toReturn.add( __MY__sizy );
+						return toReturn;
+					}
+					
+					@Override
+					protected CarmaStoreUpdate getUpdate(CarmaSystem sys,  final double now ) {
+						return new CarmaStoreUpdate() {
+							
+							//@Override
+							public void update(RandomGenerator r, CarmaStore store) {
+								final Node __MY__loc = store.get( "loc" , Node.class );
+								final Node __ATTR__loc = store.get( "loc" , Node.class );
+							}
+						};
+					}
+					
+					@Override
+					protected CarmaPredicate getPredicate(CarmaSystem sys, final CarmaStore myStore) {
+						final Node __MY__loc = myStore.get( "loc" , Node.class );
+						Integer __MY__right = (Integer) myStore.get( "right" );
+						return new CarmaPredicate() {
+				
+							//@Override
+							public boolean satisfy(double now,CarmaStore store) {
+								try {
+									Node __ATTR__loc = store.get( "loc" , Node.class );
+									Integer __ATTR__zone = (Integer) store.get( "zone" );
+									return carmaEquals( __MY__right , __ATTR__zone );
+								} catch (NullPointerException e) {
+									return false;
+								}
+							}
+							
+						};
+						
+					}
+				};		
+				
+				_COMP_Agent.addTransition( 
+					__STATE___Agent_LEADER , 
+					new CarmaPredicate.Conjunction(  _FOO_predicate0  ) , 
+					action , 
+					__STATE___Agent_LEADER );			
+			}
 		}
 		{
 			CarmaAction action = new CarmaInput( 
@@ -745,6 +759,7 @@ public class AllTheWayMinAct extends CarmaModel {
 						public void update(RandomGenerator r, CarmaStore store) {
 							Node __MY__loc = store.get( "loc" , Node.class );
 							Node __ATTR__loc = store.get( "loc" , Node.class );
+							store.set( "done", true );
 							store.set( "sizy", __VARIABLE__aCounter );
 						}
 					};
@@ -783,69 +798,83 @@ public class AllTheWayMinAct extends CarmaModel {
 				__STATE___Agent_LEADER );			
 		}
 		{
-			CarmaAction action = new CarmaInput( 
-				__ACT_NAME__count , __ACT__count , false  		
-			) {
-				
-				@Override
-				protected CarmaStoreUpdate getUpdate(CarmaSystem sys, final Object value, final double now) {
-					
-					LinkedList<Object> message = (LinkedList<Object>) value;
-					final int __VARIABLE__anId = (Integer) message.get(0);
-					final int __VARIABLE__aCounter = (Integer) message.get(1);
-					return new CarmaStoreUpdate() {
-						
-						//@Override
-						public void update(RandomGenerator r, CarmaStore store) {
-							LinkedList<__RECORD__ToForward> __ATTR__pending = (LinkedList<__RECORD__ToForward>) store.get( "pending" );
-							Node __MY__loc = store.get( "loc" , Node.class );
-							Node __ATTR__loc = store.get( "loc" , Node.class );
-							Integer __MY__leader = (Integer) store.get( "leader" );
-							store.set( "leader", Math.min( __MY__leader , __VARIABLE__anId ) );
-							__MY__leader = Math.min( __MY__leader , __VARIABLE__anId );
-							store.set( "pending", concatenate( __ATTR__pending , getList( __FUN__addElement( 
-										Integer.valueOf( __VARIABLE__anId ),
-										Integer.valueOf( __VARIABLE__aCounter )
-									).clone() )  ) );
-							__ATTR__pending = concatenate( __ATTR__pending , getList( __FUN__addElement( 
-										Integer.valueOf( __VARIABLE__anId ),
-										Integer.valueOf( __VARIABLE__aCounter )
-									).clone() )  );
-						}
-					};
-								
-				}	
-				
-				@Override
-				protected CarmaPredicate getPredicate(CarmaSystem sys, CarmaStore myStore, Object value) {
-							LinkedList<Object> message = (LinkedList<Object>) value;
-							final int __VARIABLE__anId = (Integer) message.get(0);
-							final int __VARIABLE__aCounter = (Integer) message.get(1);
-							final Node __MY__loc = myStore.get( "loc" , Node.class );
-							Integer __MY__left = (Integer) myStore.get( "left" );
-							return new CarmaPredicate() {
-			
-								//@Override
-								public boolean satisfy(double now,CarmaStore store) {
-									try {
-										Node __ATTR__loc = store.get( "loc" , Node.class );
-										Integer __ATTR__zone = (Integer) store.get( "zone" );
-										return carmaEquals( __MY__left , __ATTR__zone );
-									} catch (NullPointerException e) {
-										return false;
-									}
-								}
-								
-							};
-					
+			CarmaPredicate _FOO_predicate0 = new CarmaPredicate() {
+		
+				//@Override
+				public boolean satisfy(double now,CarmaStore store) {
+					final Node __MY__loc = store.get( "loc" , Node.class );
+					final Node __ATTR__loc = store.get( "loc" , Node.class );
+					LinkedList<__RECORD__ToForward> __MY__pending = (LinkedList<__RECORD__ToForward>) store.get( "pending" );
+					return carmaEquals( computeSize( __MY__pending ) , 0 );
 				}
+					
+			};
+			{
+				CarmaAction action = new CarmaInput( 
+					__ACT_NAME__count , __ACT__count , false  		
+				) {
+					
+					@Override
+					protected CarmaStoreUpdate getUpdate(CarmaSystem sys, final Object value, final double now) {
+						
+						LinkedList<Object> message = (LinkedList<Object>) value;
+						final int __VARIABLE__anId = (Integer) message.get(0);
+						final int __VARIABLE__aCounter = (Integer) message.get(1);
+						return new CarmaStoreUpdate() {
 							
-			};		
-			
-			_COMP_Agent.addTransition( 
-				__STATE___Agent_FOLLOWER , 
-				action , 
-				__STATE___Agent_FOLLOWER );			
+							//@Override
+							public void update(RandomGenerator r, CarmaStore store) {
+								LinkedList<__RECORD__ToForward> __ATTR__pending = (LinkedList<__RECORD__ToForward>) store.get( "pending" );
+								Node __MY__loc = store.get( "loc" , Node.class );
+								Node __ATTR__loc = store.get( "loc" , Node.class );
+								Integer __MY__leader = (Integer) store.get( "leader" );
+								store.set( "leader", Math.min( __MY__leader , __VARIABLE__anId ) );
+								__MY__leader = Math.min( __MY__leader , __VARIABLE__anId );
+								store.set( "pending", concatenate( __ATTR__pending , getList( __FUN__addElement( 
+											Integer.valueOf( __VARIABLE__anId ),
+											Integer.valueOf( __VARIABLE__aCounter )
+										).clone() )  ) );
+								__ATTR__pending = concatenate( __ATTR__pending , getList( __FUN__addElement( 
+											Integer.valueOf( __VARIABLE__anId ),
+											Integer.valueOf( __VARIABLE__aCounter )
+										).clone() )  );
+							}
+						};
+									
+					}	
+					
+					@Override
+					protected CarmaPredicate getPredicate(CarmaSystem sys, CarmaStore myStore, Object value) {
+								LinkedList<Object> message = (LinkedList<Object>) value;
+								final int __VARIABLE__anId = (Integer) message.get(0);
+								final int __VARIABLE__aCounter = (Integer) message.get(1);
+								final Node __MY__loc = myStore.get( "loc" , Node.class );
+								Integer __MY__left = (Integer) myStore.get( "left" );
+								return new CarmaPredicate() {
+				
+									//@Override
+									public boolean satisfy(double now,CarmaStore store) {
+										try {
+											Node __ATTR__loc = store.get( "loc" , Node.class );
+											Integer __ATTR__zone = (Integer) store.get( "zone" );
+											return carmaEquals( __MY__left , __ATTR__zone );
+										} catch (NullPointerException e) {
+											return false;
+										}
+									}
+									
+								};
+						
+					}
+								
+				};		
+				
+				_COMP_Agent.addTransition( 
+					__STATE___Agent_FOLLOWER , 
+					new CarmaPredicate.Conjunction(  _FOO_predicate0  ) , 
+					action , 
+					__STATE___Agent_FOLLOWER );			
+			}
 		}
 		{
 			CarmaPredicate _FOO_predicate0 = new CarmaPredicate() {
@@ -1340,9 +1369,10 @@ public class AllTheWayMinAct extends CarmaModel {
 						//- receiver: reference to the store of the receiver;				
 						//@Override
 						public boolean satisfy(double now,CarmaStore store) {
+							Integer __MY__sizy = (Integer) store.get( "sizy" );
 							Node __MY__loc = store.get( "loc" , Node.class );
 							try{
-								Boolean result = true;
+								Boolean result = carmaEquals( __MY__sizy , __CONST__NODEZ );
 								return (result==null?false:result);
 							} catch (NullPointerException e) {
 								return false;
