@@ -23,6 +23,7 @@ const NODEZ = 50;
 component Agent(int zone){
 	store{
 		attrib int id = zone;
+		attrib int candidatez = 1;
 		attrib int sizy = 1;
 		attrib zone := zone;
 		attrib right := (zone+1)%NODEZ;
@@ -30,11 +31,12 @@ component Agent(int zone){
 		attrib list<ToForward> pending = newList(ToForward);
 		attrib int leader = id;
 		attrib bool known = false;
+		attrib bool done = false;
 		
 	}
 	behaviour{
 		IDLE = 
-			send[my.right == zone]<my.id,my.sizy>{}.ACTIVE
+			send[my.right == zone]<my.id,my.candidatez>{}.ACTIVE
 			
 			+
 			
@@ -57,33 +59,28 @@ component Agent(int zone){
 		
 		+
 		
-		
-// NON CREDO CHE SERVA!		
-//		[size(my.pending) > 0 && (pending[0].ID != my.id) && known]check*{}.CHECK
-//		
-//		+
-		
 		[(size(my.pending) > 0) && (pending[0].ID != my.id)]send[my.right == zone]<pending[0].ID,(pending[0].COUNT+1)>{
 			my.leader = min(pending[0].ID,my.leader);
-			my.sizy = my.sizy+1;
+			my.candidatez = my.candidatez+1;
 			pending = removeFirstElement(pending);
 		}.ACTIVE;
 		
 		
 		CHECK = 
-			[my.sizy == my.pending[0].COUNT && my.leader == my.id]becomeLeader*{
+			[my.candidatez == my.pending[0].COUNT && my.leader == my.id]becomeLeader*{
 				pending = removeFirstElement(pending);
 			}.LEADER
 			
 			+
 			
-			[my.sizy == my.pending[0].COUNT && my.leader != my.id]becomeFollower*{
+			[my.candidatez == my.pending[0].COUNT && my.leader != my.id]becomeFollower*{
 				
 			}.FOLLOWER
 			
 			+
 			
-			[my.sizy != my.pending[0].COUNT]becomeFeederz*{}.ACTIVE
+			[my.candidatez != my.pending[0].COUNT]becomeFeederz*{}.ACTIVE
+			
 			+
 			
 		send[my.left == zone](anId,aCounter){
@@ -93,11 +90,39 @@ component Agent(int zone){
 			
 		LEADER = 
 
-			beLeader*{}.LEADER;
+			count[my.right == zone]<my.id,my.sizy>{}.LEADER
+			
+			+
+			
+			count[my.left == zone](anId,aCounter){
+				my.sizy = aCounter;
+			}.LEADER;
 		
 		FOLLOWER =
 		
-			beFollower*{}.FOLLOWER;	
+			count[my.left == zone](anId,aCounter){
+				my.leader = min(my.leader,anId);
+				pending = pending +[:addElement(anId,aCounter):];
+			}.FOLLOWER
+			
+			+
+			
+			[(size(my.pending) > 0) && pending[0].ID == my.leader]count<pending[0].ID, pending[0].COUNT+1>{
+				pending = removeFirstElement(pending);
+			}.FOLLOWER
+			
+			+
+		
+			[(size(my.pending) > 0)]send[my.right == zone]<pending[0].ID,(pending[0].COUNT)>{
+				my.leader = min(pending[0].ID,my.leader);
+				pending = removeFirstElement(pending);
+			}.FOLLOWER
+			
+			+
+			
+			send[my.left == zone](anId,aCounter){
+				pending = pending +[:addElement(anId,aCounter):];
+			}.FOLLOWER;
 			
 	}
 	init{
@@ -126,7 +151,7 @@ system AllTheWayInRing {
 	}
 }
 
-measure leader = #{Agent[LEADER] | true};
+measure leader = #{Agent[LEADER] | my.sizy == NODEZ};
 measure followerz = #{Agent[FOLLOWER] | true};
 measure messages = global.messages;
 measure idlez = #{Agent[IDLE] | true};
