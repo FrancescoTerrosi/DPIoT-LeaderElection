@@ -929,7 +929,22 @@ public class AllTheWayMinAct extends CarmaModel {
 					
 					@Override
 					protected CarmaPredicate getPredicate(CarmaSystem sys, final CarmaStore myStore) {
-						return CarmaPredicate.TRUE;
+						final Node __MY__loc = myStore.get( "loc" , Node.class );
+						Integer __MY__right = (Integer) myStore.get( "right" );
+						return new CarmaPredicate() {
+				
+							//@Override
+							public boolean satisfy(double now,CarmaStore store) {
+								try {
+									Node __ATTR__loc = store.get( "loc" , Node.class );
+									Integer __ATTR__zone = (Integer) store.get( "zone" );
+									return carmaEquals( __MY__right , __ATTR__zone );
+								} catch (NullPointerException e) {
+									return false;
+								}
+							}
+							
+						};
 						
 					}
 				};		

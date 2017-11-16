@@ -1,4 +1,6 @@
 
+//TODO: STATO CUSCINETTO PER I FOLLOWER IN ATTESA CHE I LEADERZZZ COMPLETINO L'ESECUZIONE ???
+
 record ToForward = [int ID, int COUNT];
 
 fun list<ToForward> removeFirstElement(list<ToForward> pending){
@@ -108,7 +110,7 @@ component Agent(int zone){
 			
 			+
 			
-			[(size(my.pending) > 0) && pending[0].ID == my.leader]count<pending[0].ID, pending[0].COUNT+1>{
+			[(size(my.pending) > 0) && pending[0].ID == my.leader]count[my.right == zone]<pending[0].ID, pending[0].COUNT+1>{
 				done = true;
 				pending = removeFirstElement(pending);
 			}.FOLLOWER
