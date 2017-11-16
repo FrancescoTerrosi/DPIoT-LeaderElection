@@ -101,7 +101,7 @@ component Agent(int zone){
 		
 		FOLLOWER =
 		
-			[size(my.pending) == 0]count[my.left == zone](anId,aCounter){
+			[(size(my.pending) == 0) && !done]count[my.left == zone](anId,aCounter){
 				my.leader = min(my.leader,anId);
 				pending = pending +[:addElement(anId,aCounter):];
 			}.FOLLOWER
@@ -109,6 +109,7 @@ component Agent(int zone){
 			+
 			
 			[(size(my.pending) > 0) && pending[0].ID == my.leader]count<pending[0].ID, pending[0].COUNT+1>{
+				done = true;
 				pending = removeFirstElement(pending);
 			}.FOLLOWER
 			
