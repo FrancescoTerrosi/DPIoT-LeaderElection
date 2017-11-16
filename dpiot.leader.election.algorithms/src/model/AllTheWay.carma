@@ -17,7 +17,7 @@ fun ToForward addElement(int id, int counter){
 	return result;
 }
 
-const NODEZ = 100;
+const NODEZ = 50;
 
 
 component Agent(int zone){
@@ -138,5 +138,4 @@ measure messages = global.messages;
 measure idlez = #{Agent[IDLE] | true};
 measure activez = #{Agent[ACTIVE] | true};
 measure checkz = #{Agent[CHECK] | true};
-measure go4leaderz = #{Agent[GO4LEADER] | true};
 

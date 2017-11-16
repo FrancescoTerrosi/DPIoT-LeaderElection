@@ -64,7 +64,7 @@ public class AllTheWayMinAct extends CarmaModel {
 		}
 	}
 
-	public final int __CONST__NODEZ = 100;
+	public final int __CONST__NODEZ = 50;
 
 	public LinkedList<__RECORD__ToForward> __FUN__removeFirstElement ( 
 		LinkedList<__RECORD__ToForward> __VARIABLE__pending
@@ -241,7 +241,7 @@ public class AllTheWayMinAct extends CarmaModel {
 			_COMP_Agent.addTransition( 
 				__STATE___Agent_IDLE , 
 				action , 
-				__STATE___Agent_ACTIVE );			
+				__STATE___Agent_FOLLOWER );			
 		}
 		{
 			CarmaAction action = new CarmaInput( 

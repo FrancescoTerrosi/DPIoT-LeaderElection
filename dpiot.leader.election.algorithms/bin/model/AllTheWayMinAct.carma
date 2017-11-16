@@ -17,7 +17,7 @@ fun ToForward addElement(int id, int counter){
 	return result;
 }
 
-const NODEZ = 100;
+const NODEZ = 50;
 
 
 component Agent(int zone){
@@ -40,7 +40,7 @@ component Agent(int zone){
 			
 			send[my.left == zone](anId,aCounter){
 				pending = pending +[:addElement(anId,aCounter):];
-			}.ACTIVE;
+			}.FOLLOWER;
 		
 		
 		ACTIVE =

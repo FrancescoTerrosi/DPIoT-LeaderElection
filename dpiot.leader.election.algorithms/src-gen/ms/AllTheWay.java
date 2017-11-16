@@ -64,7 +64,7 @@ public class AllTheWay extends CarmaModel {
 		}
 	}
 
-	public final int __CONST__NODEZ = 100;
+	public final int __CONST__NODEZ = 50;
 
 	public LinkedList<__RECORD__ToForward> __FUN__removeFirstElement ( 
 		LinkedList<__RECORD__ToForward> __VARIABLE__pending
@@ -1056,7 +1056,6 @@ public class AllTheWay extends CarmaModel {
 			sortedSet.add( "idlez" );
 			sortedSet.add( "activez" );
 			sortedSet.add( "checkz" );
-			sortedSet.add( "go4leaderz" );
 			return sortedSet.toArray( new String[ sortedSet.size() ] );
 		}
 		
@@ -1079,9 +1078,6 @@ public class AllTheWay extends CarmaModel {
 			if ("checkz".equals( name ) ) {
 				return getMeasurecheckz( parameters );
 			}
-			if ("go4leaderz".equals( name ) ) {
-				return getMeasurego4leaderz( parameters );
-			}
 			return null;
 		}
 	
@@ -1102,9 +1098,6 @@ public class AllTheWay extends CarmaModel {
 				return new String[] { };
 			}
 			if ("checkz".equals( name ) ) {
-				return new String[] { };
-			}
-			if ("go4leaderz".equals( name ) ) {
 				return new String[] { };
 			}
 			return new String[] {};
@@ -1132,10 +1125,6 @@ public class AllTheWay extends CarmaModel {
 				return toReturn;
 			}
 			if ("checkz".equals( name ) ) {
-				HashMap<String,Class<?>> toReturn = new HashMap<>();
-				return toReturn;
-			}
-			if ("go4leaderz".equals( name ) ) {
 				HashMap<String,Class<?>> toReturn = new HashMap<>();
 				return toReturn;
 			}
@@ -1507,74 +1496,6 @@ public class AllTheWay extends CarmaModel {
 				//@Override
 				public String getName() {
 					return "checkz";
-				}
-			
-			};
-			
-		}
-		
-		private double __MEASURE__go4leaderz( CarmaSystem system ) {
-			final CarmaStore global = system.getGlobalStore();
-			final double now = system.now();
-			final CarmaSystem sys = system;
-			return system.measure( 
-				new BasicComponentPredicate(
-					new CarmaPredicate() {
-						
-						//Here we assume that the following "final" references are available (if needed):
-						//- global: reference to the global store;
-						//- sender: reference to the store of sender;
-						//- receiver: reference to the store of the receiver;				
-						//@Override
-						public boolean satisfy(double now,CarmaStore store) {
-							Node __MY__loc = store.get( "loc" , Node.class );
-							try{
-								Boolean result = true;
-								return (result==null?false:result);
-							} catch (NullPointerException e) {
-								return false;
-							}
-						}
-					
-						
-					}
-					, new CarmaProcessPredicate() {
-				
-						//@Override
-						public boolean eval(CarmaProcess p) {
-							if (p instanceof CarmaSequentialProcess) {
-								CarmaSequentialProcess csp = (CarmaSequentialProcess) p;
-								try{
-									return csp.getName().equals("Agent")&&csp.getState().getName().equals("GO4LEADER");
-								} catch (NullPointerException e) {
-									return false;
-								}
-							}
-							return false;
-						}
-									
-					}
-					)
-			)
-			;
-		}
-		
-		
-		private Measure<CarmaSystem> getMeasurego4leaderz( 
-			Map<String,Object> parameters
-		) {
-			
-		
-			return new Measure<CarmaSystem>() {
-			
-				//@Override
-				public double measure(final CarmaSystem system) {
-					return __MEASURE__go4leaderz( system );
-				}
-		
-				//@Override
-				public String getName() {
-					return "go4leaderz";
 				}
 			
 			};
