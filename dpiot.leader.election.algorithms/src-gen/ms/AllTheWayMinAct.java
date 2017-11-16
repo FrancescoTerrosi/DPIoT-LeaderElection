@@ -1340,10 +1340,9 @@ public class AllTheWayMinAct extends CarmaModel {
 						//- receiver: reference to the store of the receiver;				
 						//@Override
 						public boolean satisfy(double now,CarmaStore store) {
-							Integer __MY__sizy = (Integer) store.get( "sizy" );
 							Node __MY__loc = store.get( "loc" , Node.class );
 							try{
-								Boolean result = carmaEquals( __MY__sizy , __CONST__NODEZ );
+								Boolean result = true;
 								return (result==null?false:result);
 							} catch (NullPointerException e) {
 								return false;

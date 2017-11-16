@@ -151,7 +151,7 @@ system AllTheWayInRing {
 	}
 }
 
-measure leader = #{Agent[LEADER] | my.sizy == NODEZ};
+measure leader = #{Agent[LEADER] | true};
 measure followerz = #{Agent[FOLLOWER] | true};
 measure messages = global.messages;
 measure idlez = #{Agent[IDLE] | true};
