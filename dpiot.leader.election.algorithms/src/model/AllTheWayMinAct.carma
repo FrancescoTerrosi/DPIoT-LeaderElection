@@ -1,6 +1,4 @@
 
-//TODO: STATO CUSCINETTO PER I FOLLOWER IN ATTESA CHE I LEADERZZZ COMPLETINO L'ESECUZIONE ???
-
 record ToForward = [int ID, int COUNT];
 
 fun list<ToForward> removeFirstElement(list<ToForward> pending){
@@ -25,20 +23,20 @@ const NODEZ = 50;
 component Agent(int zone){
 	store{
 		attrib int id = zone;
-		attrib int candidatez = 1;
 		attrib int sizy = 1;
 		attrib zone := zone;
 		attrib right := (zone+1)%NODEZ;
 		attrib left := (zone+NODEZ-1)%NODEZ;
 		attrib list<ToForward> pending = newList(ToForward);
 		attrib int leader = MAXINT;
-		attrib bool known = false;
 		attrib bool done = false;
 		
 	}
 	behaviour{
 		IDLE = 
-			send[my.right == zone]<my.id,my.candidatez>{}.ACTIVE
+			send[my.right == zone]<my.id,1>{
+				my.leader = my.id;
+			}.ACTIVE
 			
 			+
 			
@@ -49,85 +47,76 @@ component Agent(int zone){
 		
 		ACTIVE =
 		
-		send[my.left == zone](anId,aCounter){
-			pending = pending +[:addElement(anId,aCounter):];
-		}.ACTIVE
-		
-		+
-		
-		[(size(my.pending) > 0) && (pending[0].ID == my.id)]check*{
-			my.known = true;
-		}.CHECK
-		
-		+
-		
-		[(size(my.pending) > 0) && (pending[0].ID != my.id)]send[my.right == zone]<pending[0].ID,(pending[0].COUNT+1)>{
-			my.leader = min(pending[0].ID,my.leader);
-			my.candidatez = my.candidatez+1;
-			pending = removeFirstElement(pending);
-		}.ACTIVE;
+			send[my.left == zone](anId,aCounter){
+				pending = pending +[:addElement(anId,aCounter):];
+			}.ACTIVE
+			
+			+
+			
+			[(size(my.pending) > 0) && (pending[0].ID == my.id)]check*{}.CHECK
+			
+			+
+			
+			[(size(my.pending) > 0) && (pending[0].ID != my.id)]send[my.right == zone]<pending[0].ID,(pending[0].COUNT+1)>{
+				my.leader = min(pending[0].ID,my.leader);
+				my.sizy = my.sizy+1;
+				pending = removeFirstElement(pending);
+			}.ACTIVE;
 		
 		
 		CHECK = 
-			[my.candidatez == my.pending[0].COUNT && my.leader == my.id]becomeLeader*{
+			
+			[my.sizy == my.pending[0].COUNT && my.leader == my.id]becomeLeader*{
 				pending = removeFirstElement(pending);
 			}.LEADER
 			
 			+
 			
-			[my.candidatez == my.pending[0].COUNT && my.leader != my.id]becomeFollower*{
+			[my.sizy == my.pending[0].COUNT && my.leader != my.id]becomeFollower*{
 				
 			}.FOLLOWER
 			
 			+
 			
-			[my.candidatez != my.pending[0].COUNT]becomeFeederz*{}.ACTIVE
-			
-			+
-			
-		send[my.left == zone](anId,aCounter){
-			pending = pending +[:addElement(anId,aCounter):];
-		}.CHECK;
-			
-			
-		LEADER = 
-
-			[!done]count[my.right == zone]<my.id,my.sizy>{}.LEADER
-			
-			+
-			
-			count[my.left == zone](anId,aCounter){
-				done = true;
-				my.sizy = aCounter;
-			}.LEADER;
-		
-		FOLLOWER =
-		
-			[(size(my.pending) == 0) && !done]count[my.left == zone](anId,aCounter){
-				my.leader = min(my.leader,anId);
-				pending = pending +[:addElement(anId,aCounter):];
-			}.FOLLOWER
-			
-			+
-			
-			[(size(my.pending) > 0) && pending[0].ID == my.leader]count[my.right == zone]<pending[0].ID, pending[0].COUNT+1>{
-				done = true;
-				pending = removeFirstElement(pending);
-			}.FOLLOWER
-			
-			+
-		
-			[(size(my.pending) > 0)]send[my.right == zone]<pending[0].ID,(pending[0].COUNT)>{
-				my.leader = min(pending[0].ID,my.leader);
-				pending = removeFirstElement(pending);
-			}.FOLLOWER
+			[my.sizy != my.pending[0].COUNT]becomeFeederz*{}.ACTIVE
 			
 			+
 			
 			send[my.left == zone](anId,aCounter){
 				pending = pending +[:addElement(anId,aCounter):];
-			}.FOLLOWER;
+			}.CHECK;
 			
+			
+		LEADER = 
+		
+			beLeader*{}.LEADER;
+
+//TODO: implement diz -->
+//			[!done]count[my.right == zone]<my.id,1>{
+//				done = true;
+//			}.LEADER
+//			
+//			+
+//			
+//			[done]count[my.left == zone](anId,aCounter){
+//				my.sizy = aCounter;
+//			}.LEADER;
+		
+		FOLLOWER =
+		
+			
+		
+			send[my.left == zone](anId,aCounter){
+				pending = pending +[:addElement(anId,aCounter):];
+			}.FOLLOWER
+			
+			+
+			
+			[(size(my.pending) > 0) && (pending[0].ID != my.id)]send[my.right == zone]<pending[0].ID,(pending[0].COUNT)>{
+				my.leader = min(pending[0].ID,my.leader);
+				pending = removeFirstElement(pending);
+			}.FOLLOWER;
+		
 	}
 	init{
 		IDLE
@@ -155,7 +144,7 @@ system AllTheWayInRing {
 	}
 }
 
-measure leader = #{Agent[LEADER] | my.sizy == NODEZ};
+measure leader = #{Agent[LEADER] | true};
 measure followerz = #{Agent[FOLLOWER] | true};
 measure messages = global.messages;
 measure idlez = #{Agent[IDLE] | true};
