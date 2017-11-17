@@ -31,7 +31,7 @@ component Agent(int zone){
 		attrib right := (zone+1)%NODEZ;
 		attrib left := (zone+NODEZ-1)%NODEZ;
 		attrib list<ToForward> pending = newList(ToForward);
-		attrib int leader = id;
+		attrib int leader = MAXINT;
 		attrib bool known = false;
 		attrib bool done = false;
 		
