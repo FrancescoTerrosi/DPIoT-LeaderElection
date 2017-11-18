@@ -368,6 +368,60 @@ public class AllTheWay extends CarmaModel {
 					final Node __MY__loc = store.get( "loc" , Node.class );
 					final Node __ATTR__loc = store.get( "loc" , Node.class );
 					LinkedList<__RECORD__ToForward> __ATTR__pending = (LinkedList<__RECORD__ToForward>) store.get( "pending" );
+					Boolean __ATTR__known = (Boolean) store.get( "known" );
+					LinkedList<__RECORD__ToForward> __MY__pending = (LinkedList<__RECORD__ToForward>) store.get( "pending" );
+					Integer __MY__id = (Integer) store.get( "id" );
+					return ( ( ( computeSize( __MY__pending ) )>( 0 ) )&&( !( carmaEquals( get(__ATTR__pending,0).__FIELD__ID , __MY__id ) ) ) )&&( __ATTR__known );
+				}
+					
+			};
+			{
+				CarmaAction action = new CarmaOutput(
+					__ACT_NAME__check , __ACT__check , true  		
+				) {
+					
+					@Override
+					protected Object getValue(CarmaSystem sys, CarmaStore store, final double now) {
+						LinkedList<Object> toReturn = new LinkedList<Object>();
+						final Node __MY__loc = store.get( "loc" , Node.class );
+						final Node __ATTR__loc = store.get( "loc" , Node.class );
+						return toReturn;
+					}
+					
+					@Override
+					protected CarmaStoreUpdate getUpdate(CarmaSystem sys,  final double now ) {
+						return new CarmaStoreUpdate() {
+							
+							//@Override
+							public void update(RandomGenerator r, CarmaStore store) {
+								final Node __MY__loc = store.get( "loc" , Node.class );
+								final Node __ATTR__loc = store.get( "loc" , Node.class );
+							}
+						};
+					}
+					
+					@Override
+					protected CarmaPredicate getPredicate(CarmaSystem sys, final CarmaStore myStore) {
+						return CarmaPredicate.FALSE;
+						
+					}
+				};		
+				
+				_COMP_Agent.addTransition( 
+					__STATE___Agent_ACTIVE , 
+					new CarmaPredicate.Conjunction(  _FOO_predicate0  ) , 
+					action , 
+					__STATE___Agent_CHECK );			
+			}
+		}
+		{
+			CarmaPredicate _FOO_predicate0 = new CarmaPredicate() {
+		
+				//@Override
+				public boolean satisfy(double now,CarmaStore store) {
+					final Node __MY__loc = store.get( "loc" , Node.class );
+					final Node __ATTR__loc = store.get( "loc" , Node.class );
+					LinkedList<__RECORD__ToForward> __ATTR__pending = (LinkedList<__RECORD__ToForward>) store.get( "pending" );
 					LinkedList<__RECORD__ToForward> __MY__pending = (LinkedList<__RECORD__ToForward>) store.get( "pending" );
 					Integer __MY__id = (Integer) store.get( "id" );
 					return ( ( computeSize( __MY__pending ) )>( 0 ) )&&( !( carmaEquals( get(__ATTR__pending,0).__FIELD__ID , __MY__id ) ) );
@@ -541,6 +595,13 @@ public class AllTheWay extends CarmaModel {
 							public void update(RandomGenerator r, CarmaStore store) {
 								final Node __MY__loc = store.get( "loc" , Node.class );
 								final Node __ATTR__loc = store.get( "loc" , Node.class );
+								LinkedList<__RECORD__ToForward> __ATTR__pending = (LinkedList<__RECORD__ToForward>) store.get( "pending" );
+								store.set( "pending", __FUN__removeFirstElement( 
+											__ATTR__pending
+										) );
+								__ATTR__pending = __FUN__removeFirstElement( 
+											__ATTR__pending
+										);
 							}
 						};
 					}
@@ -906,7 +967,7 @@ public class AllTheWay extends CarmaModel {
 		c.set( "pending" ,  __ATTR__pending );
 		Integer __ATTR__leader;
 		Integer __MY__leader;
-		__ATTR__leader =  __ATTR__id;
+		__ATTR__leader =  Integer.MAX_VALUE;
 		__MY__leader = __ATTR__leader;
 		c.set( "leader" ,  __ATTR__leader );
 		Boolean __ATTR__known;

@@ -29,6 +29,7 @@ component Agent(int zone){
 		attrib left := (zone+NODEZ-1)%NODEZ;
 		attrib list<ToForward> pending = newList(ToForward);
 		attrib int leader = MAXINT;
+		attrib bool known = false;
 		attrib bool done = false;
 		
 	}
@@ -53,7 +54,13 @@ component Agent(int zone){
 			
 			+
 			
-			[(size(my.pending) > 0) && (pending[0].ID == my.id)]check*{}.CHECK
+			[(size(my.pending) > 0) && (pending[0].ID == my.id)]check*{
+				my.known = true;
+			}.CHECK
+			
+			+
+			
+			[(size(my.pending) > 0) && (pending[0].ID != my.id) && known]check*{}.CHECK
 			
 			+
 			
