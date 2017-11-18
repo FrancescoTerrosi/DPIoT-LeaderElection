@@ -80,7 +80,7 @@ component Agent(int zone){
 			+
 			
 			[my.sizy == my.pending[0].COUNT && my.leader != my.id]becomeFollower*{
-				
+				pending = removeFirstElement(pending);
 			}.FOLLOWER
 			
 			+

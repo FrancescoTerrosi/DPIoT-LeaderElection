@@ -595,6 +595,13 @@ public class AllTheWayMinAct extends CarmaModel {
 							public void update(RandomGenerator r, CarmaStore store) {
 								final Node __MY__loc = store.get( "loc" , Node.class );
 								final Node __ATTR__loc = store.get( "loc" , Node.class );
+								LinkedList<__RECORD__ToForward> __ATTR__pending = (LinkedList<__RECORD__ToForward>) store.get( "pending" );
+								store.set( "pending", __FUN__removeFirstElement( 
+											__ATTR__pending
+										) );
+								__ATTR__pending = __FUN__removeFirstElement( 
+											__ATTR__pending
+										);
 							}
 						};
 					}
