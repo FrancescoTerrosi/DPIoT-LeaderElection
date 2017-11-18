@@ -28,7 +28,7 @@ component Agent(int zone){
 		attrib right := (zone+1)%NODEZ;
 		attrib left := (zone+NODEZ-1)%NODEZ;
 		attrib list<ToForward> pending = newList(ToForward);
-		attrib int leader = id;
+		attrib int leader = MAXINT;
 		attrib bool known = false;
 		
 	}
@@ -57,11 +57,9 @@ component Agent(int zone){
 		
 		+
 		
+		[size(my.pending) > 0 && (pending[0].ID != my.id) && known]check*{}.CHECK
 		
-// NON CREDO CHE SERVA!		
-//		[size(my.pending) > 0 && (pending[0].ID != my.id) && known]check*{}.CHECK
-//		
-//		+
+		+
 		
 		[(size(my.pending) > 0) && (pending[0].ID != my.id)]send[my.right == zone]<pending[0].ID,(pending[0].COUNT+1)>{
 			my.leader = min(pending[0].ID,my.leader);
@@ -78,7 +76,7 @@ component Agent(int zone){
 			+
 			
 			[my.sizy == my.pending[0].COUNT && my.leader != my.id]becomeFollower*{
-				
+				pending = removeFirstElement(pending);
 			}.FOLLOWER
 			
 			+
