@@ -1,8 +1,8 @@
 
-record ToForward = [int ID, /*real SEED,*/ int COUNT];//confronto viene effettuato fra SEED e, in caso di uguaglianza, fra ID
+record Message = [int ID, real SEED, int COUNT];
 
-fun list<ToForward> removeFirstElement(list<ToForward> pending){
-	list<ToForward> result = newList(ToForward);
+fun list<Message> removeFirstElement(list<Message> pending){
+	list<Message> result = newList(Message);
 	if (size(pending) == 1){
 		return result;
 	}
@@ -12,8 +12,8 @@ fun list<ToForward> removeFirstElement(list<ToForward> pending){
 	return result;
 }
 
-fun ToForward addElement(int id, int counter){
-	ToForward result := [ID := id,COUNT := counter];
+fun Message addElement(int id, real seed, int counter){
+	Message result := [ID := id, SEED := seed, COUNT := counter];
 	return result;
 }
 
@@ -28,29 +28,32 @@ component Agent(int zone, real seed){
 		attrib zone := zone;
 		attrib right := (zone+1)%NODEZ;
 		attrib left := (zone+NODEZ-1)%NODEZ;
-		attrib list<ToForward> pending = newList(ToForward);
+		attrib list<Message> pending = newList(Message);
 		attrib int leader = MAXINT;
+		attrib real leaderSeed = MAXREAL;
 		attrib bool known = false;
 		attrib bool done = false;
+		attrib bool pirloFlag = false;
 		
 	}
 	behaviour{
 		IDLE = 
-			send[my.right == zone]<my.id,my.seed, 1>{
+			send[my.right == zone]<my.id,my.seed,1>{
 				my.leader = my.id;
+				my.leaderSeed = my.seed;
 			}.ACTIVE
 			
 			+
 			
 			send[my.left == zone](anId,aSeed,aCounter){
-				pending = pending +[:addElement(anId,aCounter):];
+				pending = pending +[:addElement(anId,aSeed,aCounter):];
 			}.FOLLOWER;
 		
 		
 		ACTIVE =
 		
-			send[my.left == zone](anId,aCounter){
-				pending = pending +[:addElement(anId,aCounter):];
+			send[my.left == zone](anId,aSeed,aCounter){
+				pending = pending +[:addElement(anId,aSeed,aCounter):];
 			}.ACTIVE
 			
 			+
@@ -65,11 +68,35 @@ component Agent(int zone, real seed){
 			
 			+
 			
-			[(size(my.pending) > 0) && (pending[0].ID != my.id)]send[my.right == zone]<pending[0].ID,(pending[0].COUNT+1)>{
-				my.leader = min(pending[0].ID,my.leader);
+			[(size(my.pending) > 0) && (pending[0].ID != my.id) && pending[0].SEED < my.leaderSeed]send[my.right == zone]<pending[0].ID,pending[0].SEED,(pending[0].COUNT+1)>{
+				my.leader = pending[0].ID;
+				my.leaderSeed = pending[0].SEED;
+				my.sizy = my.sizy+1;
+				pending = removeFirstElement(pending);
+			}.ACTIVE
+			
+			+
+			
+			[(size(my.pending) > 0) && (pending[0].ID != my.id) && pending[0].SEED > my.leaderSeed]send[my.right == zone]<pending[0].ID,pending[0].SEED,(pending[0].COUNT+1)>{
+				my.sizy = my.sizy+1;
+				pending = removeFirstElement(pending);
+			}.ACTIVE
+			
+			+
+			
+			[(size(my.pending) > 0) && pending[0].ID != my.id && pending[0].SEED == my.leaderSeed && (pending[0].ID < my.leader)]send[my.right == zone]<pending[0].ID,pending[0].SEED,(pending[0].COUNT+1)>{
+				my.leader = pending[0].ID;
+				my.sizy = my.sizy+1;
+				pending = removeFirstElement(pending);
+			}.ACTIVE
+			
+			+
+			
+			[(size(my.pending) > 0) && pending[0].ID != my.id && pending[0].SEED == my.leaderSeed && (pending[0].ID > my.leader)]send[my.right == zone]<pending[0].ID,pending[0].SEED,(pending[0].COUNT+1)>{
 				my.sizy = my.sizy+1;
 				pending = removeFirstElement(pending);
 			}.ACTIVE;
+			
 		
 		
 		CHECK = 
@@ -90,39 +117,59 @@ component Agent(int zone, real seed){
 			
 			+
 			
-			send[my.left == zone](anId,aCounter){
-				pending = pending +[:addElement(anId,aCounter):];
+			send[my.left == zone](anId,aSeed,aCounter){
+				pending = pending +[:addElement(anId,aSeed,aCounter):];
 			}.CHECK;
 			
 			
 		LEADER = 
 		
-			[!done]send[my.right == zone]<my.id,1>{
+			[!done]send[my.right == zone]<my.id,my.seed,1>{
 				done = true;
 			}.LEADER
 			
 			+
 			
-			[done]send[my.left == zone](anId,aCounter){
+			[done]send[my.left == zone](anId,aSeed,aCounter){
 				my.sizy = aCounter;
 			}.LEADER;
 		
 		FOLLOWER =
 			
-			[size(my.pending) > 0 && pending[0].ID == my.leader]send<pending[0].ID,pending[0].COUNT+1>{
+			[size(my.pending) > 0 && pending[0].ID == my.leader]send<pending[0].ID,pending[0].SEED,pending[0].COUNT+1>{
 				pending = removeFirstElement(pending);
 			}.FOLLOWER
 			
 			+
 		
-			send[my.left == zone](anId,aCounter){
-				pending = pending +[:addElement(anId,aCounter):];
+			send[my.left == zone](anId,aSeed,aCounter){
+				pending = pending +[:addElement(anId,aSeed,aCounter):];
 			}.FOLLOWER
 			
 			+
 			
-			[(size(my.pending) > 0) && (pending[0].ID != my.id) && (pending[0].ID != my.leader)]send[my.right == zone]<pending[0].ID,(pending[0].COUNT)>{
-				my.leader = min(pending[0].ID,my.leader);
+			[(size(my.pending) > 0) && (pending[0].SEED < my.leaderSeed)]send[my.right == zone]<pending[0].ID,pending[0].SEED,(pending[0].COUNT)>{
+				my.leader = pending[0].ID;
+				my.leaderSeed = pending[0].SEED;
+				pending = removeFirstElement(pending);
+			}.FOLLOWER
+			
+			+
+			
+			[(size(my.pending) > 0) && (pending[0].SEED > my.leaderSeed)]send[my.right == zone]<pending[0].ID,pending[0].SEED,(pending[0].COUNT)>{
+				pending = removeFirstElement(pending);
+			}.FOLLOWER
+			
+			+
+			
+			[(size(my.pending) > 0) && (pending[0].SEED == my.leaderSeed) && pending[0].ID < my.leader]send[my.right == zone]<pending[0].ID,pending[0].SEED,(pending[0].COUNT)>{
+				my.leader = pending[0].ID;
+				pending = removeFirstElement(pending);
+			}.FOLLOWER
+			
+			+
+			
+			[(size(my.pending) > 0) && (pending[0].SEED == my.leaderSeed) && pending[0].ID > my.leader]send[my.right == zone]<pending[0].ID,pending[0].SEED,(pending[0].COUNT)>{
 				pending = removeFirstElement(pending);
 			}.FOLLOWER;
 		
