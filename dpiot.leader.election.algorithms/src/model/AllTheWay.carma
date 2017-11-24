@@ -1,8 +1,8 @@
 
-record ToForward = [int ID, int COUNT];
+record Message = [int ID, real SEED, int COUNT];
 
-fun list<ToForward> removeFirstElement(list<ToForward> pending){
-	list<ToForward> result = newList(ToForward);
+fun list<Message> removeFirstElement(list<Message> pending){
+	list<Message> result = newList(Message);
 	if (size(pending) == 1){
 		return result;
 	}
@@ -12,41 +12,54 @@ fun list<ToForward> removeFirstElement(list<ToForward> pending){
 	return result;
 }
 
-fun ToForward addElement(int id, int counter){
-	ToForward result := [ID := id,COUNT := counter];
+fun Message addElement(int id, real seed, int counter){
+	Message result := [ID := id, SEED := seed, COUNT := counter];
 	return result;
 }
 
 const NODEZ = 50;
 
+//TODO:
+fun list<real> createRandomIdList(){
+	list<real> result = newList(real);
+	real x = 0.0;
+	for i from 0 to NODEZ{
+		x = RND;
+		result = result + [:x:];
+		}
+	return result;	
+}
 
-component Agent(int zone){
+component Agent(int zone, real myseed){
 	store{
 		attrib int id = zone;
+		attrib real seed = myseed;
 		attrib int sizy = 1;
 		attrib zone := zone;
 		attrib right := (zone+1)%NODEZ;
 		attrib left := (zone+NODEZ-1)%NODEZ;
-		attrib list<ToForward> pending = newList(ToForward);
+		attrib list<Message> pending = newList(Message);
 		attrib int leader = MAXINT;
 		attrib bool known = false;
 		
 	}
 	behaviour{
 		IDLE = 
-			send[my.right == zone]<my.id,my.sizy>{}.ACTIVE
+			send[my.right == zone]<my.id,my.seed,my.sizy>{
+				my.leader = my.id;
+			}.ACTIVE
 			
 			+
 			
-			send[my.left == zone](anId,aCounter){
-				pending = pending +[:addElement(anId,aCounter):];
+			send[my.left == zone](anId,aSeed,aCounter){
+				pending = pending +[:addElement(anId,aSeed,aCounter):];
 			}.GO4LEADER;
 		
 		
 		ACTIVE =
 		
-		send[my.left == zone](anId,aCounter){
-			pending = pending +[:addElement(anId,aCounter):];
+		send[my.left == zone](anId,aSeed,aCounter){
+			pending = pending +[:addElement(anId,aSeed,aCounter):];
 		}.ACTIVE
 		
 		+
@@ -61,12 +74,27 @@ component Agent(int zone){
 		
 		+
 		
-		[(size(my.pending) > 0) && (pending[0].ID != my.id)]send[my.right == zone]<pending[0].ID,(pending[0].COUNT+1)>{
+		[(size(my.pending) > 0) && (pending[0].SEED < my.seed) && !known]send[my.right == zone]<pending[0].ID,pending[0].SEED,(pending[0].COUNT+1)>{
+			
+			my.leader = pending[0].ID;
+			my.sizy = my.sizy+1;
+			pending = removeFirstElement(pending);
+		}.ACTIVE
+		
+		+
+		
+		[(size(my.pending) > 0) && (pending[0].SEED == my.seed) && (pending[0].ID != my.id)]send[my.right == zone]<pending[0].ID,pending[0].SEED,(pending[0].COUNT+1)>{
 			my.leader = min(pending[0].ID,my.leader);
 			my.sizy = my.sizy+1;
 			pending = removeFirstElement(pending);
-		}.ACTIVE;
+		}.ACTIVE
 		
+		+
+		
+		[(size(my.pending) > 0) && (pending[0].SEED > my.seed)]send[my.right == zone]<pending[0].ID,pending[0].SEED,(pending[0].COUNT+1)>{
+			my.sizy = my.sizy+1;
+			pending = removeFirstElement(pending);
+		}.ACTIVE;
 		
 		CHECK = 
 			[my.sizy == my.pending[0].COUNT && my.leader == my.id]becomeLeader*{
@@ -84,8 +112,8 @@ component Agent(int zone){
 			[my.sizy != my.pending[0].COUNT]becomeFeederz*{}.ACTIVE
 			+
 			
-		send[my.left == zone](anId,aCounter){
-			pending = pending +[:addElement(anId,aCounter):];
+		send[my.left == zone](anId,aSeed,aCounter){
+			pending = pending +[:addElement(anId,aSeed,aCounter):];
 		}.CHECK;
 			
 			
@@ -98,11 +126,13 @@ component Agent(int zone){
 			beFollower*{}.FOLLOWER;	
 
 		GO4LEADER = 
-			send[my.left == zone](anId, aCounter){
-				pending = pending +[:addElement(anId,aCounter):];
+			send[my.left == zone](anId, aSeed, aCounter){
+				pending = pending +[:addElement(anId,aSeed,aCounter):];
 			}.GO4LEADER
 			+
-			send[my.right == zone]<my.id,my.sizy>{}.ACTIVE;
+			send[my.right == zone]<my.id,my.seed,my.sizy>{
+				my.leader = my.id;
+			}.ACTIVE;
 	}
 	init{
 		IDLE
@@ -115,7 +145,7 @@ component Agent(int zone){
 system AllTheWayInRing {	
 	collective {
 		for (i ; i < NODEZ ; 1) {
-			new Agent(i);
+			new Agent(i,RND);
 		}
 	}	
 	environment {

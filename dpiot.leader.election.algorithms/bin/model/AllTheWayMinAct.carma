@@ -1,5 +1,5 @@
 
-record ToForward = [int ID, int COUNT];
+record ToForward = [int ID, /*real SEED,*/ int COUNT];//confronto viene effettuato fra SEED e, in caso di uguaglianza, fra ID
 
 fun list<ToForward> removeFirstElement(list<ToForward> pending){
 	list<ToForward> result = newList(ToForward);
@@ -20,9 +20,10 @@ fun ToForward addElement(int id, int counter){
 const NODEZ = 50;
 
 
-component Agent(int zone){
+component Agent(int zone, real seed){
 	store{
 		attrib int id = zone;
+		attrib real seed = seed;
 		attrib int sizy = 1;
 		attrib zone := zone;
 		attrib right := (zone+1)%NODEZ;
@@ -31,18 +32,17 @@ component Agent(int zone){
 		attrib int leader = MAXINT;
 		attrib bool known = false;
 		attrib bool done = false;
-		attrib bool pirloFlag = false;
 		
 	}
 	behaviour{
 		IDLE = 
-			send[my.right == zone]<my.id,1>{
+			send[my.right == zone]<my.id,my.seed, 1>{
 				my.leader = my.id;
 			}.ACTIVE
 			
 			+
 			
-			send[my.left == zone](anId,aCounter){
+			send[my.left == zone](anId,aSeed,aCounter){
 				pending = pending +[:addElement(anId,aCounter):];
 			}.FOLLOWER;
 		
@@ -138,7 +138,7 @@ component Agent(int zone){
 system AllTheWayInRing {	
 	collective {
 		for (i ; i < NODEZ ; 1) {
-			new Agent(i);
+			new Agent(i,RND);
 		}
 	}	
 	environment {
