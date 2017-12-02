@@ -1,0 +1,186 @@
+
+enum MessageType = ELECTION, NOTIFY;
+
+record Message = [MessageType MESSAGE,int ID, real SEED];
+
+fun list<Message> removeFirstElement(list<Message> pending){
+	list<Message> result = newList(Message);
+	if (size(pending) == 1){
+		return result;
+	}
+	for i from 1 to size(pending){
+		result = result + [:pending[i]:];
+	}
+	return result;
+}
+
+fun Message addElement(MessageType message, int id, real seed){
+	Message result := [MESSAGE := message, ID = id, SEED := seed];
+	return result;
+}
+
+const NODEZ = 50;
+
+
+component Agent(int zone, real seed){
+	store{
+		attrib int id = zone;
+		attrib real seed = seed;
+		attrib zone := zone;
+		attrib right := (zone+1)%NODEZ;
+		attrib left := (zone+NODEZ-1)%NODEZ;
+		attrib list<Message> pending = newList(Message);
+		attrib int leader = id;
+		attrib real leaderSeed = seed;
+		attrib bool known = false;
+		attrib bool done = false;
+		
+	}
+	behaviour{
+		
+		IDLE = 
+			send[my.right == zone]<ELECTION,my.id,my.seed>{}.ACTIVE
+			
+			+
+			
+			send[my.left == zone](messageType,anId,aSeed){
+				pending = pending +[:addElement(messageType,anId,aSeed):];
+			}.SENDELECTION;
+		
+		ACTIVE = 
+			
+			send[my.left == zone](messageType,anId,aSeed){
+				pending = pending + [:addElement(messageType,anId,aSeed):];
+			}.ACTIVE
+			
+			+
+		
+			[
+				size(pending) > 0 &&
+				pending[0].MESSAGE == ELECTION && 
+				my.leaderSeed > pending[0].SEED
+			]
+			send[my.right == zone]<pending[0].MESSAGE,pending[0].ID,pending[0].SEED>{
+				my.leaderSeed = pending[0].SEED;
+				pending = removeFirstElement(pending);
+			}.ACTIVE
+
+			+
+
+			[
+				size(pending) > 0 &&
+				pending[0].MESSAGE == ELECTION && 
+				my.leaderSeed == pending[0].SEED && 
+				my.id > pending[0].ID
+			]
+			send[my.right == zone]<pending[0].MESSAGE,pending[0].ID,pending[0].SEED>{
+				my.leaderSeed = pending[0].SEED;
+				pending = removeFirstElement(pending);
+			}.ACTIVE
+			
+			+
+			
+			[
+				size(pending) > 0 &&
+				pending[0].MESSAGE == ELECTION &&
+				my.leaderSeed < pending[0].SEED
+			]
+			removeElement*{
+				pending = removeFirstElement(pending);
+			}.ACTIVE
+
+			+
+			
+			[
+				size(pending) > 0 &&
+				pending[0].MESSAGE == ELECTION &&
+				my.leaderSeed == pending[0].SEED &&
+				my.id < pending[0].ID
+			]
+			removeElement*{
+				pending = removeFirstElement(pending);
+			}.ACTIVE
+			
+			+
+			
+			[
+				size(pending) > 0 &&
+				pending[0].MESSAGE == ELECTION &&
+				my.id == pending[0].ID
+			]
+			send[my.right == zone]<NOTIFY,my.id,my.seed>{
+				pending = removeFirstElement(pending);
+			}.LEADER
+			
+			+
+			
+			[
+				size(pending) > 0 &&
+				pending[0].MESSAGE == NOTIFY
+			]
+			send[my.right == zone]<pending[0].MESSAGE,pending[0].ID,pending[0].SEED>{
+				pending = removeFirstElement(pending);
+			}.FOLLOWER;
+			
+		FOLLOWER =
+		
+			send[my.left == zone](messageType,anId,aSeed){
+				
+			}.FOLLOWER
+			
+			+
+		
+			beFollower*{}.FOLLOWER;
+		
+		LEADER =
+		
+		
+			send[my.left == zone](messageType,anId,aSeed){
+				
+			}.LEADER;
+		
+		SENDELECTION =
+		
+			send[my.left == zone](messageType,anId,aSeed){
+				pending = pending +[:addElement(messageType,anId,aSeed):];
+			}.SENDELECTION
+			
+			+
+		
+			send[my.right == zone]<ELECTION,my.id,my.seed>{
+				
+			}.ACTIVE;
+	}
+	init{
+		IDLE
+	}
+}
+
+
+
+
+system LeaderElectionInRing {	
+	collective {
+		for (i ; i < NODEZ ; 1) {
+			new Agent(i,RND);
+		}
+	}	
+	environment {
+		store {
+			attrib int messages = 0;
+			}
+		update {
+			send{
+				messages = global.messages+1;
+			}
+		}
+	}
+}
+
+measure leader = #{Agent[LEADER] | true};
+measure followerz = #{Agent[FOLLOWER] | true};
+measure messages = global.messages;
+measure idlez = #{Agent[IDLE] | true};
+measure activez = #{Agent[ACTIVE] | true};
+measure candidating = #{Agent[SENDELECTION] | true};
+
