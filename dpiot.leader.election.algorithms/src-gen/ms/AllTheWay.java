@@ -113,32 +113,6 @@ public class AllTheWay extends CarmaModel {
 			//
 		}
 	}
-	public LinkedList<Double> __FUN__createRandomIdList ( 
-	) {
-		{
-			//
-			LinkedList<Double> __VARIABLE__result =new LinkedList<Double>()
-			;
-			//
-			//
-			Double __VARIABLE__x =0.0;
-			//
-			//
-			for( int __VARIABLE__i = 0 ; __VARIABLE__i < __CONST__NODEZ ; __VARIABLE__i += 1 ) 
-				{
-					//
-					__VARIABLE__x = RandomGeneratorRegistry.rnd();
-					//
-					//
-					__VARIABLE__result = concatenate( __VARIABLE__result , getList( __VARIABLE__x )  );
-					//
-				}
-			//
-			//
-			return __VARIABLE__result;
-			//
-		}
-	}
 	
 	
 	
@@ -1228,21 +1202,21 @@ public class AllTheWay extends CarmaModel {
 	
 	public String[] getSystems() {
 		return new String[] {
-			"AllTheWayInRing"
+			"LeaderElectionInRing"
 		};	
 	}
 	
 	public SimulationFactory<CarmaSystem> getFactory( String name ) {
-		if ("AllTheWayInRing".equals( name )) {
-			return getFactorySystemAllTheWayInRing();
+		if ("LeaderElectionInRing".equals( name )) {
+			return getFactorySystemLeaderElectionInRing();
 		}
 		return null;
 	}
 			
 	
-	public class __SYSTEM__AllTheWayInRing extends CarmaSystem {
+	public class __SYSTEM__LeaderElectionInRing extends CarmaSystem {
 		
-		public __SYSTEM__AllTheWayInRing( ) {
+		public __SYSTEM__LeaderElectionInRing( ) {
 			super( );
 			Integer __ATTR__messages;
 			Integer __GLOBAL__messages;
@@ -1316,12 +1290,12 @@ public class AllTheWay extends CarmaModel {
 	}
 	
 	
-	public SimulationFactory<CarmaSystem> getFactorySystemAllTheWayInRing() {
+	public SimulationFactory<CarmaSystem> getFactorySystemLeaderElectionInRing() {
 		return new SimulationFactory<CarmaSystem>() {
 	
 			//@Override
 			public CarmaSystem getModel() {
-				CarmaSystem sys = new __SYSTEM__AllTheWayInRing();
+				CarmaSystem sys = new __SYSTEM__LeaderElectionInRing();
 				CarmaSystem.setCurrentSpaceModel( sys.getSpaceModel() );
 				return sys;
 			}

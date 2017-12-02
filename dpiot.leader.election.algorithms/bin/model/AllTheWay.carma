@@ -19,17 +19,6 @@ fun Message addElement(int id, real seed, int counter){
 
 const NODEZ = 50;
 
-//TODO:
-fun list<real> createRandomIdList(){
-	list<real> result = newList(real);
-	real x = 0.0;
-	for i from 0 to NODEZ{
-		x = RND;
-		result = result + [:x:];
-		}
-	return result;	
-}
-
 component Agent(int zone, real myseed){
 	store{
 		attrib int id = zone;
@@ -142,7 +131,7 @@ component Agent(int zone, real myseed){
 
 
 
-system AllTheWayInRing {	
+system LeaderElectionInRing {	
 	collective {
 		for (i ; i < NODEZ ; 1) {
 			new Agent(i,RND);

@@ -1665,11 +1665,6 @@ public class AllTheWayMinAct extends CarmaModel {
 		__ATTR__done =  false;
 		__MY__done = __ATTR__done;
 		c.set( "done" ,  __ATTR__done );
-		Boolean __ATTR__pirloFlag;
-		Boolean __MY__pirloFlag;
-		__ATTR__pirloFlag =  false;
-		__MY__pirloFlag = __ATTR__pirloFlag;
-		c.set( "pirloFlag" ,  __ATTR__pirloFlag );
 		c.addAgent( new CarmaSequentialProcess( c , _COMP_Agent , __STATE___Agent_IDLE ));
 		return c;
 	}	
@@ -1691,21 +1686,21 @@ public class AllTheWayMinAct extends CarmaModel {
 	
 	public String[] getSystems() {
 		return new String[] {
-			"AllTheWayInRing"
+			"LeaderElectionInRing"
 		};	
 	}
 	
 	public SimulationFactory<CarmaSystem> getFactory( String name ) {
-		if ("AllTheWayInRing".equals( name )) {
-			return getFactorySystemAllTheWayInRing();
+		if ("LeaderElectionInRing".equals( name )) {
+			return getFactorySystemLeaderElectionInRing();
 		}
 		return null;
 	}
 			
 	
-	public class __SYSTEM__AllTheWayInRing extends CarmaSystem {
+	public class __SYSTEM__LeaderElectionInRing extends CarmaSystem {
 		
-		public __SYSTEM__AllTheWayInRing( ) {
+		public __SYSTEM__LeaderElectionInRing( ) {
 			super( );
 			Integer __ATTR__messages;
 			Integer __GLOBAL__messages;
@@ -1779,12 +1774,12 @@ public class AllTheWayMinAct extends CarmaModel {
 	}
 	
 	
-	public SimulationFactory<CarmaSystem> getFactorySystemAllTheWayInRing() {
+	public SimulationFactory<CarmaSystem> getFactorySystemLeaderElectionInRing() {
 		return new SimulationFactory<CarmaSystem>() {
 	
 			//@Override
 			public CarmaSystem getModel() {
-				CarmaSystem sys = new __SYSTEM__AllTheWayInRing();
+				CarmaSystem sys = new __SYSTEM__LeaderElectionInRing();
 				CarmaSystem.setCurrentSpaceModel( sys.getSpaceModel() );
 				return sys;
 			}

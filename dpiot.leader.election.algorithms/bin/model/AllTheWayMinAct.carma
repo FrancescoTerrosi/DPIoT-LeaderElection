@@ -33,7 +33,6 @@ component Agent(int zone, real seed){
 		attrib real leaderSeed = MAXREAL;
 		attrib bool known = false;
 		attrib bool done = false;
-		attrib bool pirloFlag = false;
 		
 	}
 	behaviour{
@@ -182,7 +181,7 @@ component Agent(int zone, real seed){
 
 
 
-system AllTheWayInRing {	
+system LeaderElectionInRing {	
 	collective {
 		for (i ; i < NODEZ ; 1) {
 			new Agent(i,RND);
