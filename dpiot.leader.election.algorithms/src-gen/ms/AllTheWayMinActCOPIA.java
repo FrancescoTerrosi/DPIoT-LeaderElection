@@ -98,7 +98,7 @@ public class AllTheWayMinActCOPIA extends CarmaModel {
 			//
 		}
 	}
-	public __RECORD__Message __FUN__addElement ( 
+	public __RECORD__Message __FUN__createElement ( 
 		Integer __VARIABLE__id,Double __VARIABLE__seed,Integer __VARIABLE__counter
 	) {
 		{
@@ -113,6 +113,18 @@ public class AllTheWayMinActCOPIA extends CarmaModel {
 			//
 		}
 	}
+	public LinkedList<__RECORD__Message> __FUN__addMessage ( 
+		LinkedList<__RECORD__Message> __VARIABLE__listy,__RECORD__Message __VARIABLE__message
+	) {
+		{
+			//
+			__VARIABLE__listy = concatenate( __VARIABLE__listy , getList( __VARIABLE__message.clone() )  );
+			//
+			//
+			return __VARIABLE__listy;
+			//
+		}
+	}
 	
 	
 	
@@ -122,6 +134,7 @@ public class AllTheWayMinActCOPIA extends CarmaModel {
 	public final CarmaProcessAutomaton _COMP_Agent = new CarmaProcessAutomaton("Agent");
 	
 	public final CarmaProcessAutomaton.State __STATE___Agent_IDLE = _COMP_Agent.newState("IDLE");		
+	public final CarmaProcessAutomaton.State __STATE___Agent_ACTIVEIDLE = _COMP_Agent.newState("ACTIVEIDLE");		
 	public final CarmaProcessAutomaton.State __STATE___Agent_ACTIVE = _COMP_Agent.newState("ACTIVE");		
 	public final CarmaProcessAutomaton.State __STATE___Agent_CHECK = _COMP_Agent.newState("CHECK");		
 	public final CarmaProcessAutomaton.State __STATE___Agent_LEADER = _COMP_Agent.newState("LEADER");		
@@ -130,6 +143,118 @@ public class AllTheWayMinActCOPIA extends CarmaModel {
 	private void generateAgentBehaviour( ) {
 		
 		
+		{
+			CarmaAction action = new CarmaOutput(
+				__ACT_NAME__activate , __ACT__activate , true  		
+			) {
+				
+				@Override
+				protected Object getValue(CarmaSystem sys, CarmaStore store, final double now) {
+					LinkedList<Object> toReturn = new LinkedList<Object>();
+					final Node __MY__loc = store.get( "loc" , Node.class );
+					final Node __ATTR__loc = store.get( "loc" , Node.class );
+					return toReturn;
+				}
+				
+				@Override
+				protected CarmaStoreUpdate getUpdate(CarmaSystem sys,  final double now ) {
+					return new CarmaStoreUpdate() {
+						
+						//@Override
+						public void update(RandomGenerator r, CarmaStore store) {
+							final Node __MY__loc = store.get( "loc" , Node.class );
+							final Node __ATTR__loc = store.get( "loc" , Node.class );
+						}
+					};
+				}
+				
+				@Override
+				protected CarmaPredicate getPredicate(CarmaSystem sys, final CarmaStore myStore) {
+					return CarmaPredicate.FALSE;
+					
+				}
+			};		
+			
+			_COMP_Agent.addTransition( 
+				__STATE___Agent_IDLE , 
+				action , 
+				__STATE___Agent_ACTIVEIDLE );			
+		}
+		{
+			CarmaAction action = new CarmaInput( 
+				__ACT_NAME__send , __ACT__send , false  		
+			) {
+				
+				@Override
+				protected CarmaStoreUpdate getUpdate(CarmaSystem sys, final Object value, final double now) {
+					
+					LinkedList<Object> message = (LinkedList<Object>) value;
+					final int __VARIABLE__anId = (Integer) message.get(0);
+					final double __VARIABLE__aSeed = (Double) message.get(1);
+					final int __VARIABLE__aCounter = (Integer) message.get(2);
+					return new CarmaStoreUpdate() {
+						
+						//@Override
+						public void update(RandomGenerator r, CarmaStore store) {
+							LinkedList<__RECORD__Message> __ATTR__pending = (LinkedList<__RECORD__Message>) store.get( "pending" );
+							__RECORD__Message __ATTR__toForward = (__RECORD__Message) store.get( "toForward" );
+							Node __MY__loc = store.get( "loc" , Node.class );
+							Node __ATTR__loc = store.get( "loc" , Node.class );
+							store.set( "toForward", __FUN__createElement( 
+										Integer.valueOf( __VARIABLE__anId ),
+										Double.valueOf( __VARIABLE__aSeed ),
+										Integer.valueOf( __VARIABLE__aCounter )
+									).clone() );
+							__ATTR__toForward = __FUN__createElement( 
+										Integer.valueOf( __VARIABLE__anId ),
+										Double.valueOf( __VARIABLE__aSeed ),
+										Integer.valueOf( __VARIABLE__aCounter )
+									).clone();
+							store.set( "pending", __FUN__addMessage( 
+										__ATTR__pending,
+										__ATTR__toForward.clone()
+									) );
+							__ATTR__pending = __FUN__addMessage( 
+										__ATTR__pending,
+										__ATTR__toForward.clone()
+									);
+						}
+					};
+								
+				}	
+				
+				@Override
+				protected CarmaPredicate getPredicate(CarmaSystem sys, CarmaStore myStore, Object value) {
+							LinkedList<Object> message = (LinkedList<Object>) value;
+							final int __VARIABLE__anId = (Integer) message.get(0);
+							final double __VARIABLE__aSeed = (Double) message.get(1);
+							final int __VARIABLE__aCounter = (Integer) message.get(2);
+							final Node __MY__loc = myStore.get( "loc" , Node.class );
+							Integer __MY__left = (Integer) myStore.get( "left" );
+							return new CarmaPredicate() {
+			
+								//@Override
+								public boolean satisfy(double now,CarmaStore store) {
+									try {
+										Node __ATTR__loc = store.get( "loc" , Node.class );
+										Integer __ATTR__zone = (Integer) store.get( "zone" );
+										return carmaEquals( __MY__left , __ATTR__zone );
+									} catch (NullPointerException e) {
+										return false;
+									}
+								}
+								
+							};
+					
+				}
+							
+			};		
+			
+			_COMP_Agent.addTransition( 
+				__STATE___Agent_IDLE , 
+				action , 
+				__STATE___Agent_FOLLOWER );			
+		}
 		{
 			CarmaAction action = new CarmaOutput(
 				__ACT_NAME__send , __ACT__send , false  		
@@ -187,7 +312,7 @@ public class AllTheWayMinActCOPIA extends CarmaModel {
 			};		
 			
 			_COMP_Agent.addTransition( 
-				__STATE___Agent_IDLE , 
+				__STATE___Agent_ACTIVEIDLE , 
 				action , 
 				__STATE___Agent_ACTIVE );			
 		}
@@ -208,18 +333,27 @@ public class AllTheWayMinActCOPIA extends CarmaModel {
 						//@Override
 						public void update(RandomGenerator r, CarmaStore store) {
 							LinkedList<__RECORD__Message> __ATTR__pending = (LinkedList<__RECORD__Message>) store.get( "pending" );
+							__RECORD__Message __ATTR__toForward = (__RECORD__Message) store.get( "toForward" );
 							Node __MY__loc = store.get( "loc" , Node.class );
 							Node __ATTR__loc = store.get( "loc" , Node.class );
-							store.set( "pending", concatenate( __ATTR__pending , getList( __FUN__addElement( 
+							store.set( "toForward", __FUN__createElement( 
 										Integer.valueOf( __VARIABLE__anId ),
 										Double.valueOf( __VARIABLE__aSeed ),
 										Integer.valueOf( __VARIABLE__aCounter )
-									).clone() )  ) );
-							__ATTR__pending = concatenate( __ATTR__pending , getList( __FUN__addElement( 
+									).clone() );
+							__ATTR__toForward = __FUN__createElement( 
 										Integer.valueOf( __VARIABLE__anId ),
 										Double.valueOf( __VARIABLE__aSeed ),
 										Integer.valueOf( __VARIABLE__aCounter )
-									).clone() )  );
+									).clone();
+							store.set( "pending", __FUN__addMessage( 
+										__ATTR__pending,
+										__ATTR__toForward.clone()
+									) );
+							__ATTR__pending = __FUN__addMessage( 
+										__ATTR__pending,
+										__ATTR__toForward.clone()
+									);
 						}
 					};
 								
@@ -253,9 +387,9 @@ public class AllTheWayMinActCOPIA extends CarmaModel {
 			};		
 			
 			_COMP_Agent.addTransition( 
-				__STATE___Agent_IDLE , 
+				__STATE___Agent_ACTIVEIDLE , 
 				action , 
-				__STATE___Agent_FOLLOWER );			
+				__STATE___Agent_ACTIVEIDLE );			
 		}
 		{
 			CarmaAction action = new CarmaInput( 
@@ -274,18 +408,27 @@ public class AllTheWayMinActCOPIA extends CarmaModel {
 						//@Override
 						public void update(RandomGenerator r, CarmaStore store) {
 							LinkedList<__RECORD__Message> __ATTR__pending = (LinkedList<__RECORD__Message>) store.get( "pending" );
+							__RECORD__Message __ATTR__toForward = (__RECORD__Message) store.get( "toForward" );
 							Node __MY__loc = store.get( "loc" , Node.class );
 							Node __ATTR__loc = store.get( "loc" , Node.class );
-							store.set( "pending", concatenate( __ATTR__pending , getList( __FUN__addElement( 
+							store.set( "toForward", __FUN__createElement( 
 										Integer.valueOf( __VARIABLE__anId ),
 										Double.valueOf( __VARIABLE__aSeed ),
 										Integer.valueOf( __VARIABLE__aCounter )
-									).clone() )  ) );
-							__ATTR__pending = concatenate( __ATTR__pending , getList( __FUN__addElement( 
+									).clone() );
+							__ATTR__toForward = __FUN__createElement( 
 										Integer.valueOf( __VARIABLE__anId ),
 										Double.valueOf( __VARIABLE__aSeed ),
 										Integer.valueOf( __VARIABLE__aCounter )
-									).clone() )  );
+									).clone();
+							store.set( "pending", __FUN__addMessage( 
+										__ATTR__pending,
+										__ATTR__toForward.clone()
+									) );
+							__ATTR__pending = __FUN__addMessage( 
+										__ATTR__pending,
+										__ATTR__toForward.clone()
+									);
 						}
 					};
 								
@@ -959,18 +1102,27 @@ public class AllTheWayMinActCOPIA extends CarmaModel {
 						//@Override
 						public void update(RandomGenerator r, CarmaStore store) {
 							LinkedList<__RECORD__Message> __ATTR__pending = (LinkedList<__RECORD__Message>) store.get( "pending" );
+							__RECORD__Message __ATTR__toForward = (__RECORD__Message) store.get( "toForward" );
 							Node __MY__loc = store.get( "loc" , Node.class );
 							Node __ATTR__loc = store.get( "loc" , Node.class );
-							store.set( "pending", concatenate( __ATTR__pending , getList( __FUN__addElement( 
+							store.set( "toForward", __FUN__createElement( 
 										Integer.valueOf( __VARIABLE__anId ),
 										Double.valueOf( __VARIABLE__aSeed ),
 										Integer.valueOf( __VARIABLE__aCounter )
-									).clone() )  ) );
-							__ATTR__pending = concatenate( __ATTR__pending , getList( __FUN__addElement( 
+									).clone() );
+							__ATTR__toForward = __FUN__createElement( 
 										Integer.valueOf( __VARIABLE__anId ),
 										Double.valueOf( __VARIABLE__aSeed ),
 										Integer.valueOf( __VARIABLE__aCounter )
-									).clone() )  );
+									).clone();
+							store.set( "pending", __FUN__addMessage( 
+										__ATTR__pending,
+										__ATTR__toForward.clone()
+									) );
+							__ATTR__pending = __FUN__addMessage( 
+										__ATTR__pending,
+										__ATTR__toForward.clone()
+									);
 						}
 					};
 								
@@ -1231,18 +1383,27 @@ public class AllTheWayMinActCOPIA extends CarmaModel {
 						//@Override
 						public void update(RandomGenerator r, CarmaStore store) {
 							LinkedList<__RECORD__Message> __ATTR__pending = (LinkedList<__RECORD__Message>) store.get( "pending" );
+							__RECORD__Message __ATTR__toForward = (__RECORD__Message) store.get( "toForward" );
 							Node __MY__loc = store.get( "loc" , Node.class );
 							Node __ATTR__loc = store.get( "loc" , Node.class );
-							store.set( "pending", concatenate( __ATTR__pending , getList( __FUN__addElement( 
+							store.set( "toForward", __FUN__createElement( 
 										Integer.valueOf( __VARIABLE__anId ),
 										Double.valueOf( __VARIABLE__aSeed ),
 										Integer.valueOf( __VARIABLE__aCounter )
-									).clone() )  ) );
-							__ATTR__pending = concatenate( __ATTR__pending , getList( __FUN__addElement( 
+									).clone() );
+							__ATTR__toForward = __FUN__createElement( 
 										Integer.valueOf( __VARIABLE__anId ),
 										Double.valueOf( __VARIABLE__aSeed ),
 										Integer.valueOf( __VARIABLE__aCounter )
-									).clone() )  );
+									).clone();
+							store.set( "pending", __FUN__addMessage( 
+										__ATTR__pending,
+										__ATTR__toForward.clone()
+									) );
+							__ATTR__pending = __FUN__addMessage( 
+										__ATTR__pending,
+										__ATTR__toForward.clone()
+									);
 						}
 					};
 								
@@ -1645,6 +1806,14 @@ public class AllTheWayMinActCOPIA extends CarmaModel {
 		;
 		__MY__pending = __ATTR__pending;
 		c.set( "pending" ,  __ATTR__pending );
+		__RECORD__Message __ATTR__toForward;
+		__RECORD__Message __MY__toForward;
+		__ATTR__toForward =  new __RECORD__Message( Integer.valueOf( -(1) ),
+		Double.valueOf( -(1.0) ),
+		Integer.valueOf( -(1) )
+		 );
+		__MY__toForward = __ATTR__toForward;
+		c.set( "toForward" ,  __ATTR__toForward );
 		Integer __ATTR__leader;
 		Integer __MY__leader;
 		__ATTR__leader =  Integer.MAX_VALUE;
@@ -1665,11 +1834,6 @@ public class AllTheWayMinActCOPIA extends CarmaModel {
 		__ATTR__done =  false;
 		__MY__done = __ATTR__done;
 		c.set( "done" ,  __ATTR__done );
-		Boolean __ATTR__pirloFlag;
-		Boolean __MY__pirloFlag;
-		__ATTR__pirloFlag =  false;
-		__MY__pirloFlag = __ATTR__pirloFlag;
-		c.set( "pirloFlag" ,  __ATTR__pirloFlag );
 		c.addAgent( new CarmaSequentialProcess( c , _COMP_Agent , __STATE___Agent_IDLE ));
 		return c;
 	}	
@@ -1677,35 +1841,37 @@ public class AllTheWayMinActCOPIA extends CarmaModel {
 	/* END COMPONENT: Agent */
 		
 	
-	public static final int __ACT__send = 0;	
+	public static final int __ACT__activate = 0;	
+	public static final String __ACT_NAME__activate = "activate";
+	public static final int __ACT__send = 1;	
 	public static final String __ACT_NAME__send = "send";
-	public static final int __ACT__check = 1;	
+	public static final int __ACT__check = 2;	
 	public static final String __ACT_NAME__check = "check";
-	public static final int __ACT__becomeLeader = 2;	
+	public static final int __ACT__becomeLeader = 3;	
 	public static final String __ACT_NAME__becomeLeader = "becomeLeader";
-	public static final int __ACT__becomeFollower = 3;	
+	public static final int __ACT__becomeFollower = 4;	
 	public static final String __ACT_NAME__becomeFollower = "becomeFollower";
-	public static final int __ACT__becomeFeederz = 4;	
+	public static final int __ACT__becomeFeederz = 5;	
 	public static final String __ACT_NAME__becomeFeederz = "becomeFeederz";
 	
 	
 	public String[] getSystems() {
 		return new String[] {
-			"AllTheWayInRing"
+			"LeaderElectionInRing"
 		};	
 	}
 	
 	public SimulationFactory<CarmaSystem> getFactory( String name ) {
-		if ("AllTheWayInRing".equals( name )) {
-			return getFactorySystemAllTheWayInRing();
+		if ("LeaderElectionInRing".equals( name )) {
+			return getFactorySystemLeaderElectionInRing();
 		}
 		return null;
 	}
 			
 	
-	public class __SYSTEM__AllTheWayInRing extends CarmaSystem {
+	public class __SYSTEM__LeaderElectionInRing extends CarmaSystem {
 		
-		public __SYSTEM__AllTheWayInRing( ) {
+		public __SYSTEM__LeaderElectionInRing( ) {
 			super( );
 			Integer __ATTR__messages;
 			Integer __GLOBAL__messages;
@@ -1736,14 +1902,30 @@ public class AllTheWayMinActCOPIA extends CarmaModel {
 		}
 		
 		@Override
-		public double broadcastRate( CarmaStore sender , int action ) {
+		public double broadcastRate(final CarmaStore sender, int action) {
+			final CarmaSystem system = this;
+			final CarmaSystem sys = this;
+			final CarmaStore global = this.global;
+			Node __SENDER__loc = sender.get( "loc" , Node.class );
+			if ((action==__ACT__activate)
+				) {
+					//
+					return 1;
+					//
+				}
 			return 1.0;
+			
 		}
-	
+		
 		@Override
-		public double unicastRate( CarmaStore sender , int action ) {
+		public double unicastRate(final CarmaStore sender, int action) {
+			final CarmaSystem system = this;
+			final CarmaSystem sys = this;
+			final CarmaStore global = this.global;
+			Node __SENDER__loc = sender.get( "loc" , Node.class );
 			return 1.0;
-		}				
+			
+		}
 		
 		@Override
 		public void broadcastUpdate( 
@@ -1779,12 +1961,12 @@ public class AllTheWayMinActCOPIA extends CarmaModel {
 	}
 	
 	
-	public SimulationFactory<CarmaSystem> getFactorySystemAllTheWayInRing() {
+	public SimulationFactory<CarmaSystem> getFactorySystemLeaderElectionInRing() {
 		return new SimulationFactory<CarmaSystem>() {
 	
 			//@Override
 			public CarmaSystem getModel() {
-				CarmaSystem sys = new __SYSTEM__AllTheWayInRing();
+				CarmaSystem sys = new __SYSTEM__LeaderElectionInRing();
 				CarmaSystem.setCurrentSpaceModel( sys.getSpaceModel() );
 				return sys;
 			}

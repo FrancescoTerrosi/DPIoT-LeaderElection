@@ -12,9 +12,14 @@ fun list<Message> removeFirstElement(list<Message> pending){
 	return result;
 }
 
-fun Message addElement(int id, real seed, int counter){
+fun Message createElement(int id, real seed, int counter){
 	Message result := [ID := id, SEED := seed, COUNT := counter];
 	return result;
+}
+
+fun list<Message> addMessage(list<Message> listy, Message message){
+	listy = listy + [:message:];
+	return listy;
 }
 
 const NODEZ = 50;
@@ -29,15 +34,28 @@ component Agent(int zone, real seed){
 		attrib right := (zone+1)%NODEZ;
 		attrib left := (zone+NODEZ-1)%NODEZ;
 		attrib list<Message> pending = newList(Message);
+		attrib Message toForward = [ID := -1, SEED := -1.0, COUNT = -1];
 		attrib int leader = MAXINT;
 		attrib real leaderSeed = MAXREAL;
 		attrib bool known = false;
 		attrib bool done = false;
-		attrib bool pirloFlag = false;
 		
 	}
 	behaviour{
+		
 		IDLE = 
+			activate*{}.ACTIVEIDLE
+			
+			+
+			
+			send[my.left == zone](anId,aSeed,aCounter){
+				toForward = createElement(anId,aSeed,aCounter);
+				pending = addMessage(pending,toForward);
+			}.FOLLOWER;
+		
+		
+		ACTIVEIDLE = 
+			
 			send[my.right == zone]<my.id,my.seed,1>{
 				my.leader = my.id;
 				my.leaderSeed = my.seed;
@@ -46,29 +64,45 @@ component Agent(int zone, real seed){
 			+
 			
 			send[my.left == zone](anId,aSeed,aCounter){
-				pending = pending +[:addElement(anId,aSeed,aCounter):];
-			}.FOLLOWER;
+				toForward = createElement(anId,aSeed,aCounter);
+				pending = addMessage(pending,toForward);
+			}.ACTIVEIDLE;
 		
 		
 		ACTIVE =
 		
 			send[my.left == zone](anId,aSeed,aCounter){
-				pending = pending +[:addElement(anId,aSeed,aCounter):];
+				toForward = createElement(anId,aSeed,aCounter);
+				pending = addMessage(pending,toForward);
 			}.ACTIVE
 			
 			+
 			
-			[(size(my.pending) > 0) && (pending[0].ID == my.id)]check*{
+			[
+				(size(my.pending) > 0) && 
+				(pending[0].ID == my.id)
+			]
+			check*{
 				my.known = true;
 			}.CHECK
 			
 			+
 			
-			[(size(my.pending) > 0) && (pending[0].ID != my.id) && known]check*{}.CHECK
+			[
+				(size(my.pending) > 0) && 
+				(pending[0].ID != my.id) && 
+				known
+			]
+			check*{}.CHECK
 			
 			+
 			
-			[(size(my.pending) > 0) && (pending[0].ID != my.id) && pending[0].SEED < my.leaderSeed]send[my.right == zone]<pending[0].ID,pending[0].SEED,(pending[0].COUNT+1)>{
+			[
+				(size(my.pending) > 0) && 
+				(pending[0].ID != my.id) && 
+				pending[0].SEED < my.leaderSeed
+			]
+			send[my.right == zone]<pending[0].ID,pending[0].SEED,(pending[0].COUNT+1)>{
 				my.leader = pending[0].ID;
 				my.leaderSeed = pending[0].SEED;
 				my.sizy = my.sizy+1;
@@ -77,14 +111,25 @@ component Agent(int zone, real seed){
 			
 			+
 			
-			[(size(my.pending) > 0) && (pending[0].ID != my.id) && pending[0].SEED > my.leaderSeed]send[my.right == zone]<pending[0].ID,pending[0].SEED,(pending[0].COUNT+1)>{
+			[
+				(size(my.pending) > 0) && 
+				(pending[0].ID != my.id) && 
+				pending[0].SEED > my.leaderSeed
+			]
+			send[my.right == zone]<pending[0].ID,pending[0].SEED,(pending[0].COUNT+1)>{
 				my.sizy = my.sizy+1;
 				pending = removeFirstElement(pending);
 			}.ACTIVE
 			
 			+
 			
-			[(size(my.pending) > 0) && pending[0].ID != my.id && pending[0].SEED == my.leaderSeed && (pending[0].ID < my.leader)]send[my.right == zone]<pending[0].ID,pending[0].SEED,(pending[0].COUNT+1)>{
+			[
+				(size(my.pending) > 0) && 
+				pending[0].ID != my.id && 
+				pending[0].SEED == my.leaderSeed && 
+				(pending[0].ID < my.leader)
+			]
+			send[my.right == zone]<pending[0].ID,pending[0].SEED,(pending[0].COUNT+1)>{
 				my.leader = pending[0].ID;
 				my.sizy = my.sizy+1;
 				pending = removeFirstElement(pending);
@@ -92,7 +137,13 @@ component Agent(int zone, real seed){
 			
 			+
 			
-			[(size(my.pending) > 0) && pending[0].ID != my.id && pending[0].SEED == my.leaderSeed && (pending[0].ID > my.leader)]send[my.right == zone]<pending[0].ID,pending[0].SEED,(pending[0].COUNT+1)>{
+			[
+				(size(my.pending) > 0) && 
+				pending[0].ID != my.id && 
+				pending[0].SEED == my.leaderSeed && 
+				(pending[0].ID > my.leader)
+			]
+			send[my.right == zone]<pending[0].ID,pending[0].SEED,(pending[0].COUNT+1)>{
 				my.sizy = my.sizy+1;
 				pending = removeFirstElement(pending);
 			}.ACTIVE;
@@ -101,13 +152,21 @@ component Agent(int zone, real seed){
 		
 		CHECK = 
 			
-			[my.sizy == my.pending[0].COUNT && my.leader == my.id]becomeLeader*{
+			[
+				my.sizy == my.pending[0].COUNT && 
+				my.leader == my.id
+			]
+			becomeLeader*{
 				pending = removeFirstElement(pending);
 			}.LEADER
 			
 			+
 			
-			[my.sizy == my.pending[0].COUNT && my.leader != my.id]becomeFollower*{
+			[
+				my.sizy == my.pending[0].COUNT && 
+				my.leader != my.id
+			]
+			becomeFollower*{
 				pending = removeFirstElement(pending);
 			}.FOLLOWER
 			
@@ -118,7 +177,8 @@ component Agent(int zone, real seed){
 			+
 			
 			send[my.left == zone](anId,aSeed,aCounter){
-				pending = pending +[:addElement(anId,aSeed,aCounter):];
+				toForward = createElement(anId,aSeed,aCounter);
+				pending = addMessage(pending,toForward);
 			}.CHECK;
 			
 			
@@ -136,19 +196,28 @@ component Agent(int zone, real seed){
 		
 		FOLLOWER =
 			
-			[size(my.pending) > 0 && pending[0].ID == my.leader]send<pending[0].ID,pending[0].SEED,pending[0].COUNT+1>{
+			[
+				size(my.pending) > 0 && 
+				pending[0].ID == my.leader
+			]
+			send<pending[0].ID,pending[0].SEED,pending[0].COUNT+1>{
 				pending = removeFirstElement(pending);
 			}.FOLLOWER
 			
 			+
 		
 			send[my.left == zone](anId,aSeed,aCounter){
-				pending = pending +[:addElement(anId,aSeed,aCounter):];
+				toForward = createElement(anId,aSeed,aCounter);
+				pending = addMessage(pending,toForward);
 			}.FOLLOWER
 			
 			+
 			
-			[(size(my.pending) > 0) && (pending[0].SEED < my.leaderSeed)]send[my.right == zone]<pending[0].ID,pending[0].SEED,(pending[0].COUNT)>{
+			[
+				(size(my.pending) > 0) && 
+				(pending[0].SEED < my.leaderSeed)
+			]
+			send[my.right == zone]<pending[0].ID,pending[0].SEED,(pending[0].COUNT)>{
 				my.leader = pending[0].ID;
 				my.leaderSeed = pending[0].SEED;
 				pending = removeFirstElement(pending);
@@ -156,20 +225,34 @@ component Agent(int zone, real seed){
 			
 			+
 			
-			[(size(my.pending) > 0) && (pending[0].SEED > my.leaderSeed)]send[my.right == zone]<pending[0].ID,pending[0].SEED,(pending[0].COUNT)>{
+			[
+				(size(my.pending) > 0) && 
+				(pending[0].SEED > my.leaderSeed)
+			]
+			send[my.right == zone]<pending[0].ID,pending[0].SEED,(pending[0].COUNT)>{
 				pending = removeFirstElement(pending);
 			}.FOLLOWER
 			
 			+
 			
-			[(size(my.pending) > 0) && (pending[0].SEED == my.leaderSeed) && pending[0].ID < my.leader]send[my.right == zone]<pending[0].ID,pending[0].SEED,(pending[0].COUNT)>{
+			[
+				(size(my.pending) > 0) && 
+				(pending[0].SEED == my.leaderSeed) && 
+				pending[0].ID < my.leader
+			]
+			send[my.right == zone]<pending[0].ID,pending[0].SEED,(pending[0].COUNT)>{
 				my.leader = pending[0].ID;
 				pending = removeFirstElement(pending);
 			}.FOLLOWER
 			
 			+
 			
-			[(size(my.pending) > 0) && (pending[0].SEED == my.leaderSeed) && pending[0].ID > my.leader]send[my.right == zone]<pending[0].ID,pending[0].SEED,(pending[0].COUNT)>{
+			[
+				(size(my.pending) > 0) && 
+				(pending[0].SEED == my.leaderSeed) && 
+				pending[0].ID > my.leader
+			]
+			send[my.right == zone]<pending[0].ID,pending[0].SEED,(pending[0].COUNT)>{
 				pending = removeFirstElement(pending);
 			}.FOLLOWER;
 		
@@ -182,7 +265,7 @@ component Agent(int zone, real seed){
 
 
 
-system AllTheWayInRing {	
+system LeaderElectionInRing {	
 	collective {
 		for (i ; i < NODEZ ; 1) {
 			new Agent(i,RND);
@@ -192,6 +275,14 @@ system AllTheWayInRing {
 		store {
 			attrib int messages = 0;
 			}
+		rate {
+			activate* {
+				return 1;
+//				return 0.8;
+//				return 0.5;
+//				return 0.3;
+			}
+		}
 		update {
 			send{
 				messages = global.messages+1;
@@ -207,3 +298,4 @@ measure idlez = #{Agent[IDLE] | true};
 measure activez = #{Agent[ACTIVE] | true};
 measure checkz = #{Agent[CHECK] | true};
 
+//measure activeIdlez = #{Agent[ACTIVEIDLE] | true};
