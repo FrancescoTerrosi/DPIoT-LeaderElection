@@ -98,7 +98,7 @@ public class AllTheWay extends CarmaModel {
 			//
 		}
 	}
-	public __RECORD__Message __FUN__addElement ( 
+	public __RECORD__Message __FUN__createElement ( 
 		Integer __VARIABLE__id,Double __VARIABLE__seed,Integer __VARIABLE__counter
 	) {
 		{
@@ -110,6 +110,18 @@ public class AllTheWay extends CarmaModel {
 			//
 			//
 			return __VARIABLE__result.clone();
+			//
+		}
+	}
+	public LinkedList<__RECORD__Message> __FUN__addMessage ( 
+		LinkedList<__RECORD__Message> __VARIABLE__listy,__RECORD__Message __VARIABLE__message
+	) {
+		{
+			//
+			__VARIABLE__listy = concatenate( __VARIABLE__listy , getList( __VARIABLE__message.clone() )  );
+			//
+			//
+			return __VARIABLE__listy;
 			//
 		}
 	}
@@ -208,18 +220,27 @@ public class AllTheWay extends CarmaModel {
 						//@Override
 						public void update(RandomGenerator r, CarmaStore store) {
 							LinkedList<__RECORD__Message> __ATTR__pending = (LinkedList<__RECORD__Message>) store.get( "pending" );
+							__RECORD__Message __ATTR__toForward = (__RECORD__Message) store.get( "toForward" );
 							Node __MY__loc = store.get( "loc" , Node.class );
 							Node __ATTR__loc = store.get( "loc" , Node.class );
-							store.set( "pending", concatenate( __ATTR__pending , getList( __FUN__addElement( 
+							store.set( "toForward", __FUN__createElement( 
 										Integer.valueOf( __VARIABLE__anId ),
 										Double.valueOf( __VARIABLE__aSeed ),
 										Integer.valueOf( __VARIABLE__aCounter )
-									).clone() )  ) );
-							__ATTR__pending = concatenate( __ATTR__pending , getList( __FUN__addElement( 
+									).clone() );
+							__ATTR__toForward = __FUN__createElement( 
 										Integer.valueOf( __VARIABLE__anId ),
 										Double.valueOf( __VARIABLE__aSeed ),
 										Integer.valueOf( __VARIABLE__aCounter )
-									).clone() )  );
+									).clone();
+							store.set( "pending", __FUN__addMessage( 
+										__ATTR__pending,
+										__ATTR__toForward.clone()
+									) );
+							__ATTR__pending = __FUN__addMessage( 
+										__ATTR__pending,
+										__ATTR__toForward.clone()
+									);
 						}
 					};
 								
@@ -274,18 +295,27 @@ public class AllTheWay extends CarmaModel {
 						//@Override
 						public void update(RandomGenerator r, CarmaStore store) {
 							LinkedList<__RECORD__Message> __ATTR__pending = (LinkedList<__RECORD__Message>) store.get( "pending" );
+							__RECORD__Message __ATTR__toForward = (__RECORD__Message) store.get( "toForward" );
 							Node __MY__loc = store.get( "loc" , Node.class );
 							Node __ATTR__loc = store.get( "loc" , Node.class );
-							store.set( "pending", concatenate( __ATTR__pending , getList( __FUN__addElement( 
+							store.set( "toForward", __FUN__createElement( 
 										Integer.valueOf( __VARIABLE__anId ),
 										Double.valueOf( __VARIABLE__aSeed ),
 										Integer.valueOf( __VARIABLE__aCounter )
-									).clone() )  ) );
-							__ATTR__pending = concatenate( __ATTR__pending , getList( __FUN__addElement( 
+									).clone() );
+							__ATTR__toForward = __FUN__createElement( 
 										Integer.valueOf( __VARIABLE__anId ),
 										Double.valueOf( __VARIABLE__aSeed ),
 										Integer.valueOf( __VARIABLE__aCounter )
-									).clone() )  );
+									).clone();
+							store.set( "pending", __FUN__addMessage( 
+										__ATTR__pending,
+										__ATTR__toForward.clone()
+									) );
+							__ATTR__pending = __FUN__addMessage( 
+										__ATTR__pending,
+										__ATTR__toForward.clone()
+									);
 						}
 					};
 								
@@ -720,6 +750,7 @@ public class AllTheWay extends CarmaModel {
 								final Node __MY__loc = store.get( "loc" , Node.class );
 								final Node __ATTR__loc = store.get( "loc" , Node.class );
 								LinkedList<__RECORD__Message> __ATTR__pending = (LinkedList<__RECORD__Message>) store.get( "pending" );
+								store.set( "leaderBool", true );
 								store.set( "pending", __FUN__removeFirstElement( 
 											__ATTR__pending
 										) );
@@ -874,18 +905,27 @@ public class AllTheWay extends CarmaModel {
 						//@Override
 						public void update(RandomGenerator r, CarmaStore store) {
 							LinkedList<__RECORD__Message> __ATTR__pending = (LinkedList<__RECORD__Message>) store.get( "pending" );
+							__RECORD__Message __ATTR__toForward = (__RECORD__Message) store.get( "toForward" );
 							Node __MY__loc = store.get( "loc" , Node.class );
 							Node __ATTR__loc = store.get( "loc" , Node.class );
-							store.set( "pending", concatenate( __ATTR__pending , getList( __FUN__addElement( 
+							store.set( "toForward", __FUN__createElement( 
 										Integer.valueOf( __VARIABLE__anId ),
 										Double.valueOf( __VARIABLE__aSeed ),
 										Integer.valueOf( __VARIABLE__aCounter )
-									).clone() )  ) );
-							__ATTR__pending = concatenate( __ATTR__pending , getList( __FUN__addElement( 
+									).clone() );
+							__ATTR__toForward = __FUN__createElement( 
 										Integer.valueOf( __VARIABLE__anId ),
 										Double.valueOf( __VARIABLE__aSeed ),
 										Integer.valueOf( __VARIABLE__aCounter )
-									).clone() )  );
+									).clone();
+							store.set( "pending", __FUN__addMessage( 
+										__ATTR__pending,
+										__ATTR__toForward.clone()
+									) );
+							__ATTR__pending = __FUN__addMessage( 
+										__ATTR__pending,
+										__ATTR__toForward.clone()
+									);
 						}
 					};
 								
@@ -1014,18 +1054,27 @@ public class AllTheWay extends CarmaModel {
 						//@Override
 						public void update(RandomGenerator r, CarmaStore store) {
 							LinkedList<__RECORD__Message> __ATTR__pending = (LinkedList<__RECORD__Message>) store.get( "pending" );
+							__RECORD__Message __ATTR__toForward = (__RECORD__Message) store.get( "toForward" );
 							Node __MY__loc = store.get( "loc" , Node.class );
 							Node __ATTR__loc = store.get( "loc" , Node.class );
-							store.set( "pending", concatenate( __ATTR__pending , getList( __FUN__addElement( 
+							store.set( "toForward", __FUN__createElement( 
 										Integer.valueOf( __VARIABLE__anId ),
 										Double.valueOf( __VARIABLE__aSeed ),
 										Integer.valueOf( __VARIABLE__aCounter )
-									).clone() )  ) );
-							__ATTR__pending = concatenate( __ATTR__pending , getList( __FUN__addElement( 
+									).clone() );
+							__ATTR__toForward = __FUN__createElement( 
 										Integer.valueOf( __VARIABLE__anId ),
 										Double.valueOf( __VARIABLE__aSeed ),
 										Integer.valueOf( __VARIABLE__aCounter )
-									).clone() )  );
+									).clone();
+							store.set( "pending", __FUN__addMessage( 
+										__ATTR__pending,
+										__ATTR__toForward.clone()
+									) );
+							__ATTR__pending = __FUN__addMessage( 
+										__ATTR__pending,
+										__ATTR__toForward.clone()
+									);
 						}
 					};
 								
@@ -1167,11 +1216,24 @@ public class AllTheWay extends CarmaModel {
 		;
 		__MY__pending = __ATTR__pending;
 		c.set( "pending" ,  __ATTR__pending );
+		__RECORD__Message __ATTR__toForward;
+		__RECORD__Message __MY__toForward;
+		__ATTR__toForward =  new __RECORD__Message( Integer.valueOf( -(1) ),
+		Double.valueOf( -(1.0) ),
+		Integer.valueOf( -(1) )
+		 );
+		__MY__toForward = __ATTR__toForward;
+		c.set( "toForward" ,  __ATTR__toForward );
 		Integer __ATTR__leader;
 		Integer __MY__leader;
 		__ATTR__leader =  Integer.MAX_VALUE;
 		__MY__leader = __ATTR__leader;
 		c.set( "leader" ,  __ATTR__leader );
+		Boolean __ATTR__leaderBool;
+		Boolean __MY__leaderBool;
+		__ATTR__leaderBool =  false;
+		__MY__leaderBool = __ATTR__leaderBool;
+		c.set( "leaderBool" ,  __ATTR__leaderBool );
 		Boolean __ATTR__known;
 		Boolean __MY__known;
 		__ATTR__known =  false;
@@ -1320,6 +1382,8 @@ public class AllTheWay extends CarmaModel {
 			sortedSet.add( "idlez" );
 			sortedSet.add( "activez" );
 			sortedSet.add( "checkz" );
+			sortedSet.add( "leaderBoolean" );
+			sortedSet.add( "minseed" );
 			return sortedSet.toArray( new String[ sortedSet.size() ] );
 		}
 		
@@ -1342,6 +1406,12 @@ public class AllTheWay extends CarmaModel {
 			if ("checkz".equals( name ) ) {
 				return getMeasurecheckz( parameters );
 			}
+			if ("leaderBoolean".equals( name ) ) {
+				return getMeasureleaderBoolean( parameters );
+			}
+			if ("minseed".equals( name ) ) {
+				return getMeasureminseed( parameters );
+			}
 			return null;
 		}
 	
@@ -1362,6 +1432,12 @@ public class AllTheWay extends CarmaModel {
 				return new String[] { };
 			}
 			if ("checkz".equals( name ) ) {
+				return new String[] { };
+			}
+			if ("leaderBoolean".equals( name ) ) {
+				return new String[] { };
+			}
+			if ("minseed".equals( name ) ) {
 				return new String[] { };
 			}
 			return new String[] {};
@@ -1389,6 +1465,14 @@ public class AllTheWay extends CarmaModel {
 				return toReturn;
 			}
 			if ("checkz".equals( name ) ) {
+				HashMap<String,Class<?>> toReturn = new HashMap<>();
+				return toReturn;
+			}
+			if ("leaderBoolean".equals( name ) ) {
+				HashMap<String,Class<?>> toReturn = new HashMap<>();
+				return toReturn;
+			}
+			if ("minseed".equals( name ) ) {
 				HashMap<String,Class<?>> toReturn = new HashMap<>();
 				return toReturn;
 			}
@@ -1760,6 +1844,114 @@ public class AllTheWay extends CarmaModel {
 				//@Override
 				public String getName() {
 					return "checkz";
+				}
+			
+			};
+			
+		}
+		
+		private double __MEASURE__leaderBoolean( CarmaSystem system ) {
+			final CarmaStore global = system.getGlobalStore();
+			final double now = system.now();
+			final CarmaSystem sys = system;
+			return system.min( 
+				new Measure<CarmaStore>() {
+			
+					public double measure(CarmaStore store) {
+						Double __MY__seed = (Double) store.get( "seed" );
+						Boolean __MY__leaderBool = (Boolean) store.get( "leaderBool" );
+						return __MY__seed;
+					}
+				
+					public String getName() {
+						return "ANONYMOUS MEASURE";
+					}
+					
+				} , 
+				new CarmaPredicate() {
+					
+					//Here we assume that the following "final" references are available (if needed):
+					//- global: reference to the global store;
+					//- sender: reference to the store of sender;
+					//- receiver: reference to the store of the receiver;				
+					//@Override
+					public boolean satisfy(double now,CarmaStore store) {
+						Boolean __MY__leaderBool = (Boolean) store.get( "leaderBool" );
+						Node __MY__loc = store.get( "loc" , Node.class );
+						try{
+							Boolean result = carmaEquals( __MY__leaderBool , true );
+							return (result==null?false:result);
+						} catch (NullPointerException e) {
+							return false;
+						}
+					}
+				
+					
+				}
+			)
+			;
+		}
+		
+		
+		private Measure<CarmaSystem> getMeasureleaderBoolean( 
+			Map<String,Object> parameters
+		) {
+			
+		
+			return new Measure<CarmaSystem>() {
+			
+				//@Override
+				public double measure(final CarmaSystem system) {
+					return __MEASURE__leaderBoolean( system );
+				}
+		
+				//@Override
+				public String getName() {
+					return "leaderBoolean";
+				}
+			
+			};
+			
+		}
+		
+		private double __MEASURE__minseed( CarmaSystem system ) {
+			final CarmaStore global = system.getGlobalStore();
+			final double now = system.now();
+			final CarmaSystem sys = system;
+			return system.min( 
+				new Measure<CarmaStore>() {
+			
+					public double measure(CarmaStore store) {
+						Double __MY__seed = (Double) store.get( "seed" );
+						return __MY__seed;
+					}
+				
+					public String getName() {
+						return "ANONYMOUS MEASURE";
+					}
+					
+				} , 
+				CarmaPredicate.TRUE
+			)
+			;
+		}
+		
+		
+		private Measure<CarmaSystem> getMeasureminseed( 
+			Map<String,Object> parameters
+		) {
+			
+		
+			return new Measure<CarmaSystem>() {
+			
+				//@Override
+				public double measure(final CarmaSystem system) {
+					return __MEASURE__minseed( system );
+				}
+		
+				//@Override
+				public String getName() {
+					return "minseed";
 				}
 			
 			};

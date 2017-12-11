@@ -1,5 +1,5 @@
 
-enum MessageType = ELECTION, NOTIFY;
+enum MessageType = NULL,ELECTION, NOTIFY;
 
 record Message = [MessageType MESSAGE,int ID, real SEED];
 
@@ -14,11 +14,15 @@ fun list<Message> removeFirstElement(list<Message> pending){
 	return result;
 }
 
-fun Message addElement(MessageType message, int id, real seed){
+fun Message createElement(MessageType message, int id, real seed){
 	Message result := [MESSAGE := message, ID = id, SEED := seed];
 	return result;
 }
 
+fun list<Message> addMessage(list<Message> listy, Message message){
+	listy = listy + [:message:];
+	return listy;
+}
 const NODEZ = 50;
 
 
@@ -30,7 +34,9 @@ component Agent(int zone, real seed){
 		attrib right := (zone+1)%NODEZ;
 		attrib left := (zone+NODEZ-1)%NODEZ;
 		attrib list<Message> pending = newList(Message);
+		attrib Message toForward := [MESSAGE := NULL, ID := -1, SEED := -1.0];
 		attrib int leader = id;
+		attrib bool leaderBool = false;
 		attrib real leaderSeed = seed;
 		attrib bool known = false;
 		attrib bool done = false;
@@ -44,13 +50,15 @@ component Agent(int zone, real seed){
 			+
 			
 			send[my.left == zone](messageType,anId,aSeed){
-				pending = pending +[:addElement(messageType,anId,aSeed):];
+				toForward = createElement(messageType,anId,aSeed);
+				pending = addMessage(pending,toForward);
 			}.SENDELECTION;
 		
 		ACTIVE = 
 			
 			send[my.left == zone](messageType,anId,aSeed){
-				pending = pending + [:addElement(messageType,anId,aSeed):];
+				toForward = createElement(messageType,anId,aSeed);
+				pending = addMessage(pending,toForward);
 			}.ACTIVE
 			
 			+
@@ -109,6 +117,7 @@ component Agent(int zone, real seed){
 				my.id == pending[0].ID
 			]
 			send[my.right == zone]<NOTIFY,my.id,my.seed>{
+				my.leaderBool = true;
 				pending = removeFirstElement(pending);
 			}.LEADER
 			
@@ -142,7 +151,8 @@ component Agent(int zone, real seed){
 		SENDELECTION =
 		
 			send[my.left == zone](messageType,anId,aSeed){
-				pending = pending +[:addElement(messageType,anId,aSeed):];
+				toForward = createElement(messageType,anId,aSeed);
+				pending = addMessage(pending,toForward);
 			}.SENDELECTION
 			
 			+
@@ -183,4 +193,7 @@ measure messages = global.messages;
 measure idlez = #{Agent[IDLE] | true};
 measure activez = #{Agent[ACTIVE] | true};
 measure candidating = #{Agent[SENDELECTION] | true};
+
+measure leaderBoolean = min{ my.seed |  my.leaderBool == true};
+measure minseed = min{ my.seed };
 

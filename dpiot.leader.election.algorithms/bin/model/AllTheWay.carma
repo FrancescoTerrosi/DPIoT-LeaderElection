@@ -12,9 +12,14 @@ fun list<Message> removeFirstElement(list<Message> pending){
 	return result;
 }
 
-fun Message addElement(int id, real seed, int counter){
+fun Message createElement(int id, real seed, int counter){
 	Message result := [ID := id, SEED := seed, COUNT := counter];
 	return result;
+}
+
+fun list<Message> addMessage(list<Message> listy, Message message){
+	listy = listy + [:message:];
+	return listy;
 }
 
 const NODEZ = 50;
@@ -28,7 +33,9 @@ component Agent(int zone, real myseed){
 		attrib right := (zone+1)%NODEZ;
 		attrib left := (zone+NODEZ-1)%NODEZ;
 		attrib list<Message> pending = newList(Message);
+		attrib Message toForward := [ID := -1, SEED := -1.0, COUNT := -1];
 		attrib int leader = MAXINT;
+		attrib bool leaderBool = false;
 		attrib bool known = false;
 		
 	}
@@ -41,14 +48,16 @@ component Agent(int zone, real myseed){
 			+
 			
 			send[my.left == zone](anId,aSeed,aCounter){
-				pending = pending +[:addElement(anId,aSeed,aCounter):];
+				toForward = createElement(anId,aSeed,aCounter);
+				pending = addMessage(pending,toForward);
 			}.GO4LEADER;
 		
 		
 		ACTIVE =
 		
 		send[my.left == zone](anId,aSeed,aCounter){
-			pending = pending +[:addElement(anId,aSeed,aCounter):];
+			toForward = createElement(anId,aSeed,aCounter);
+			pending = addMessage(pending,toForward);
 		}.ACTIVE
 		
 		+
@@ -64,7 +73,6 @@ component Agent(int zone, real myseed){
 		+
 		
 		[(size(my.pending) > 0) && (pending[0].SEED < my.seed) && !known]send[my.right == zone]<pending[0].ID,pending[0].SEED,(pending[0].COUNT+1)>{
-			
 			my.leader = pending[0].ID;
 			my.sizy = my.sizy+1;
 			pending = removeFirstElement(pending);
@@ -87,6 +95,7 @@ component Agent(int zone, real myseed){
 		
 		CHECK = 
 			[my.sizy == my.pending[0].COUNT && my.leader == my.id]becomeLeader*{
+				my.leaderBool = true;
 				pending = removeFirstElement(pending);
 			}.LEADER
 			
@@ -102,7 +111,8 @@ component Agent(int zone, real myseed){
 			+
 			
 		send[my.left == zone](anId,aSeed,aCounter){
-			pending = pending +[:addElement(anId,aSeed,aCounter):];
+			toForward = createElement(anId,aSeed,aCounter);
+			pending = addMessage(pending,toForward);
 		}.CHECK;
 			
 			
@@ -116,7 +126,8 @@ component Agent(int zone, real myseed){
 
 		GO4LEADER = 
 			send[my.left == zone](anId, aSeed, aCounter){
-				pending = pending +[:addElement(anId,aSeed,aCounter):];
+				toForward = createElement(anId,aSeed,aCounter);
+				pending = addMessage(pending,toForward);
 			}.GO4LEADER
 			+
 			send[my.right == zone]<my.id,my.seed,my.sizy>{
@@ -156,3 +167,5 @@ measure idlez = #{Agent[IDLE] | true};
 measure activez = #{Agent[ACTIVE] | true};
 measure checkz = #{Agent[CHECK] | true};
 
+measure leaderBoolean = min{ my.seed |  my.leaderBool == true};
+measure minseed = min{ my.seed };
