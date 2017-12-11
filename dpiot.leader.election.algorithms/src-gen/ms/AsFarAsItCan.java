@@ -176,6 +176,7 @@ public class AsFarAsItCan extends CarmaModel {
 						public void update(RandomGenerator r, CarmaStore store) {
 							final Node __MY__loc = store.get( "loc" , Node.class );
 							final Node __ATTR__loc = store.get( "loc" , Node.class );
+							store.set( "candidated", true );
 						}
 					};
 				}
@@ -1015,61 +1016,308 @@ public class AsFarAsItCan extends CarmaModel {
 				__STATE___Agent_SENDELECTION );			
 		}
 		{
-			CarmaAction action = new CarmaOutput(
-				__ACT_NAME__send , __ACT__send , false  		
-			) {
-				
-				@Override
-				protected Object getValue(CarmaSystem sys, CarmaStore store, final double now) {
-					LinkedList<Object> toReturn = new LinkedList<Object>();
+			CarmaPredicate _FOO_predicate0 = new CarmaPredicate() {
+		
+				//@Override
+				public boolean satisfy(double now,CarmaStore store) {
 					final Node __MY__loc = store.get( "loc" , Node.class );
 					final Node __ATTR__loc = store.get( "loc" , Node.class );
-					Integer __MY__id = (Integer) store.get( "id" );
+					LinkedList<__RECORD__Message> __ATTR__pending = (LinkedList<__RECORD__Message>) store.get( "pending" );
 					Double __MY__seed = (Double) store.get( "seed" );
-					toReturn.add( __ENUM__MessageType.__CASE__ELECTION );
-					toReturn.add( __MY__id );
-					toReturn.add( __MY__seed );
-					return toReturn;
+					return ( get(__ATTR__pending,0).__FIELD__SEED )>( __MY__seed );
 				}
-				
-				@Override
-				protected CarmaStoreUpdate getUpdate(CarmaSystem sys,  final double now ) {
-					return new CarmaStoreUpdate() {
-						
-						//@Override
-						public void update(RandomGenerator r, CarmaStore store) {
-							final Node __MY__loc = store.get( "loc" , Node.class );
-							final Node __ATTR__loc = store.get( "loc" , Node.class );
-						}
-					};
-				}
-				
-				@Override
-				protected CarmaPredicate getPredicate(CarmaSystem sys, final CarmaStore myStore) {
-					final Node __MY__loc = myStore.get( "loc" , Node.class );
-					Integer __MY__right = (Integer) myStore.get( "right" );
-					return new CarmaPredicate() {
-			
-						//@Override
-						public boolean satisfy(double now,CarmaStore store) {
-							try {
-								Node __ATTR__loc = store.get( "loc" , Node.class );
-								Integer __ATTR__zone = (Integer) store.get( "zone" );
-								return carmaEquals( __MY__right , __ATTR__zone );
-							} catch (NullPointerException e) {
-								return false;
-							}
-						}
-						
-					};
 					
+			};
+			{
+				CarmaAction action = new CarmaOutput(
+					__ACT_NAME__send , __ACT__send , false  		
+				) {
+					
+					@Override
+					protected Object getValue(CarmaSystem sys, CarmaStore store, final double now) {
+						LinkedList<Object> toReturn = new LinkedList<Object>();
+						final Node __MY__loc = store.get( "loc" , Node.class );
+						final Node __ATTR__loc = store.get( "loc" , Node.class );
+						Integer __MY__id = (Integer) store.get( "id" );
+						Double __MY__seed = (Double) store.get( "seed" );
+						toReturn.add( __ENUM__MessageType.__CASE__ELECTION );
+						toReturn.add( __MY__id );
+						toReturn.add( __MY__seed );
+						return toReturn;
+					}
+					
+					@Override
+					protected CarmaStoreUpdate getUpdate(CarmaSystem sys,  final double now ) {
+						return new CarmaStoreUpdate() {
+							
+							//@Override
+							public void update(RandomGenerator r, CarmaStore store) {
+								final Node __MY__loc = store.get( "loc" , Node.class );
+								final Node __ATTR__loc = store.get( "loc" , Node.class );
+								store.set( "candidated", true );
+							}
+						};
+					}
+					
+					@Override
+					protected CarmaPredicate getPredicate(CarmaSystem sys, final CarmaStore myStore) {
+						final Node __MY__loc = myStore.get( "loc" , Node.class );
+						Integer __MY__right = (Integer) myStore.get( "right" );
+						return new CarmaPredicate() {
+				
+							//@Override
+							public boolean satisfy(double now,CarmaStore store) {
+								try {
+									Node __ATTR__loc = store.get( "loc" , Node.class );
+									Integer __ATTR__zone = (Integer) store.get( "zone" );
+									return carmaEquals( __MY__right , __ATTR__zone );
+								} catch (NullPointerException e) {
+									return false;
+								}
+							}
+							
+						};
+						
+					}
+				};		
+				
+				_COMP_Agent.addTransition( 
+					__STATE___Agent_SENDELECTION , 
+					new CarmaPredicate.Conjunction(  _FOO_predicate0  ) , 
+					action , 
+					__STATE___Agent_ACTIVE );			
+			}
+		}
+		{
+			CarmaPredicate _FOO_predicate0 = new CarmaPredicate() {
+		
+				//@Override
+				public boolean satisfy(double now,CarmaStore store) {
+					final Node __MY__loc = store.get( "loc" , Node.class );
+					final Node __ATTR__loc = store.get( "loc" , Node.class );
+					LinkedList<__RECORD__Message> __ATTR__pending = (LinkedList<__RECORD__Message>) store.get( "pending" );
+					Double __MY__seed = (Double) store.get( "seed" );
+					Integer __MY__id = (Integer) store.get( "id" );
+					return ( carmaEquals( get(__ATTR__pending,0).__FIELD__SEED , __MY__seed ) )&&( ( get(__ATTR__pending,0).__FIELD__ID )>( __MY__id ) );
 				}
-			};		
-			
-			_COMP_Agent.addTransition( 
-				__STATE___Agent_SENDELECTION , 
-				action , 
-				__STATE___Agent_ACTIVE );			
+					
+			};
+			{
+				CarmaAction action = new CarmaOutput(
+					__ACT_NAME__send , __ACT__send , false  		
+				) {
+					
+					@Override
+					protected Object getValue(CarmaSystem sys, CarmaStore store, final double now) {
+						LinkedList<Object> toReturn = new LinkedList<Object>();
+						final Node __MY__loc = store.get( "loc" , Node.class );
+						final Node __ATTR__loc = store.get( "loc" , Node.class );
+						Integer __MY__id = (Integer) store.get( "id" );
+						Double __MY__seed = (Double) store.get( "seed" );
+						toReturn.add( __ENUM__MessageType.__CASE__ELECTION );
+						toReturn.add( __MY__id );
+						toReturn.add( __MY__seed );
+						return toReturn;
+					}
+					
+					@Override
+					protected CarmaStoreUpdate getUpdate(CarmaSystem sys,  final double now ) {
+						return new CarmaStoreUpdate() {
+							
+							//@Override
+							public void update(RandomGenerator r, CarmaStore store) {
+								final Node __MY__loc = store.get( "loc" , Node.class );
+								final Node __ATTR__loc = store.get( "loc" , Node.class );
+								store.set( "candidated", true );
+							}
+						};
+					}
+					
+					@Override
+					protected CarmaPredicate getPredicate(CarmaSystem sys, final CarmaStore myStore) {
+						final Node __MY__loc = myStore.get( "loc" , Node.class );
+						Integer __MY__right = (Integer) myStore.get( "right" );
+						return new CarmaPredicate() {
+				
+							//@Override
+							public boolean satisfy(double now,CarmaStore store) {
+								try {
+									Node __ATTR__loc = store.get( "loc" , Node.class );
+									Integer __ATTR__zone = (Integer) store.get( "zone" );
+									return carmaEquals( __MY__right , __ATTR__zone );
+								} catch (NullPointerException e) {
+									return false;
+								}
+							}
+							
+						};
+						
+					}
+				};		
+				
+				_COMP_Agent.addTransition( 
+					__STATE___Agent_SENDELECTION , 
+					new CarmaPredicate.Conjunction(  _FOO_predicate0  ) , 
+					action , 
+					__STATE___Agent_ACTIVE );			
+			}
+		}
+		{
+			CarmaPredicate _FOO_predicate0 = new CarmaPredicate() {
+		
+				//@Override
+				public boolean satisfy(double now,CarmaStore store) {
+					final Node __MY__loc = store.get( "loc" , Node.class );
+					final Node __ATTR__loc = store.get( "loc" , Node.class );
+					LinkedList<__RECORD__Message> __ATTR__pending = (LinkedList<__RECORD__Message>) store.get( "pending" );
+					Double __MY__seed = (Double) store.get( "seed" );
+					return ( get(__ATTR__pending,0).__FIELD__SEED )<( __MY__seed );
+				}
+					
+			};
+			{
+				CarmaAction action = new CarmaOutput(
+					__ACT_NAME__send , __ACT__send , false  		
+				) {
+					
+					@Override
+					protected Object getValue(CarmaSystem sys, CarmaStore store, final double now) {
+						LinkedList<Object> toReturn = new LinkedList<Object>();
+						LinkedList<__RECORD__Message> __ATTR__pending = (LinkedList<__RECORD__Message>) store.get( "pending" );
+						final Node __MY__loc = store.get( "loc" , Node.class );
+						final Node __ATTR__loc = store.get( "loc" , Node.class );
+						toReturn.add( get(__ATTR__pending,0).__FIELD__MESSAGE );
+						toReturn.add( get(__ATTR__pending,0).__FIELD__ID );
+						toReturn.add( get(__ATTR__pending,0).__FIELD__SEED );
+						return toReturn;
+					}
+					
+					@Override
+					protected CarmaStoreUpdate getUpdate(CarmaSystem sys,  final double now ) {
+						return new CarmaStoreUpdate() {
+							
+							//@Override
+							public void update(RandomGenerator r, CarmaStore store) {
+								final Node __MY__loc = store.get( "loc" , Node.class );
+								final Node __ATTR__loc = store.get( "loc" , Node.class );
+								LinkedList<__RECORD__Message> __ATTR__pending = (LinkedList<__RECORD__Message>) store.get( "pending" );
+								store.set( "pending", __FUN__removeFirstElement( 
+											__ATTR__pending
+										) );
+								__ATTR__pending = __FUN__removeFirstElement( 
+											__ATTR__pending
+										);
+							}
+						};
+					}
+					
+					@Override
+					protected CarmaPredicate getPredicate(CarmaSystem sys, final CarmaStore myStore) {
+						final Node __MY__loc = myStore.get( "loc" , Node.class );
+						Integer __MY__right = (Integer) myStore.get( "right" );
+						return new CarmaPredicate() {
+				
+							//@Override
+							public boolean satisfy(double now,CarmaStore store) {
+								try {
+									Node __ATTR__loc = store.get( "loc" , Node.class );
+									Integer __ATTR__zone = (Integer) store.get( "zone" );
+									return carmaEquals( __MY__right , __ATTR__zone );
+								} catch (NullPointerException e) {
+									return false;
+								}
+							}
+							
+						};
+						
+					}
+				};		
+				
+				_COMP_Agent.addTransition( 
+					__STATE___Agent_SENDELECTION , 
+					new CarmaPredicate.Conjunction(  _FOO_predicate0  ) , 
+					action , 
+					__STATE___Agent_ACTIVE );			
+			}
+		}
+		{
+			CarmaPredicate _FOO_predicate0 = new CarmaPredicate() {
+		
+				//@Override
+				public boolean satisfy(double now,CarmaStore store) {
+					final Node __MY__loc = store.get( "loc" , Node.class );
+					final Node __ATTR__loc = store.get( "loc" , Node.class );
+					LinkedList<__RECORD__Message> __ATTR__pending = (LinkedList<__RECORD__Message>) store.get( "pending" );
+					Double __MY__seed = (Double) store.get( "seed" );
+					Integer __MY__id = (Integer) store.get( "id" );
+					return ( carmaEquals( get(__ATTR__pending,0).__FIELD__SEED , __MY__seed ) )&&( ( get(__ATTR__pending,0).__FIELD__ID )<( __MY__id ) );
+				}
+					
+			};
+			{
+				CarmaAction action = new CarmaOutput(
+					__ACT_NAME__send , __ACT__send , false  		
+				) {
+					
+					@Override
+					protected Object getValue(CarmaSystem sys, CarmaStore store, final double now) {
+						LinkedList<Object> toReturn = new LinkedList<Object>();
+						LinkedList<__RECORD__Message> __ATTR__pending = (LinkedList<__RECORD__Message>) store.get( "pending" );
+						final Node __MY__loc = store.get( "loc" , Node.class );
+						final Node __ATTR__loc = store.get( "loc" , Node.class );
+						toReturn.add( get(__ATTR__pending,0).__FIELD__MESSAGE );
+						toReturn.add( get(__ATTR__pending,0).__FIELD__ID );
+						toReturn.add( get(__ATTR__pending,0).__FIELD__SEED );
+						return toReturn;
+					}
+					
+					@Override
+					protected CarmaStoreUpdate getUpdate(CarmaSystem sys,  final double now ) {
+						return new CarmaStoreUpdate() {
+							
+							//@Override
+							public void update(RandomGenerator r, CarmaStore store) {
+								final Node __MY__loc = store.get( "loc" , Node.class );
+								final Node __ATTR__loc = store.get( "loc" , Node.class );
+								LinkedList<__RECORD__Message> __ATTR__pending = (LinkedList<__RECORD__Message>) store.get( "pending" );
+								store.set( "pending", __FUN__removeFirstElement( 
+											__ATTR__pending
+										) );
+								__ATTR__pending = __FUN__removeFirstElement( 
+											__ATTR__pending
+										);
+							}
+						};
+					}
+					
+					@Override
+					protected CarmaPredicate getPredicate(CarmaSystem sys, final CarmaStore myStore) {
+						final Node __MY__loc = myStore.get( "loc" , Node.class );
+						Integer __MY__right = (Integer) myStore.get( "right" );
+						return new CarmaPredicate() {
+				
+							//@Override
+							public boolean satisfy(double now,CarmaStore store) {
+								try {
+									Node __ATTR__loc = store.get( "loc" , Node.class );
+									Integer __ATTR__zone = (Integer) store.get( "zone" );
+									return carmaEquals( __MY__right , __ATTR__zone );
+								} catch (NullPointerException e) {
+									return false;
+								}
+							}
+							
+						};
+						
+					}
+				};		
+				
+				_COMP_Agent.addTransition( 
+					__STATE___Agent_SENDELECTION , 
+					new CarmaPredicate.Conjunction(  _FOO_predicate0  ) , 
+					action , 
+					__STATE___Agent_ACTIVE );			
+			}
 		}
 		
 	}
@@ -1143,6 +1391,11 @@ public class AsFarAsItCan extends CarmaModel {
 		__ATTR__done =  false;
 		__MY__done = __ATTR__done;
 		c.set( "done" ,  __ATTR__done );
+		Boolean __ATTR__candidated;
+		Boolean __MY__candidated;
+		__ATTR__candidated =  false;
+		__MY__candidated = __ATTR__candidated;
+		c.set( "candidated" ,  __ATTR__candidated );
 		c.addAgent( new CarmaSequentialProcess( c , _COMP_Agent , __STATE___Agent_IDLE ));
 		return c;
 	}	
@@ -1278,6 +1531,7 @@ public class AsFarAsItCan extends CarmaModel {
 			sortedSet.add( "idlez" );
 			sortedSet.add( "activez" );
 			sortedSet.add( "candidating" );
+			sortedSet.add( "candidated" );
 			sortedSet.add( "leaderBoolean" );
 			sortedSet.add( "minseed" );
 			return sortedSet.toArray( new String[ sortedSet.size() ] );
@@ -1301,6 +1555,9 @@ public class AsFarAsItCan extends CarmaModel {
 			}
 			if ("candidating".equals( name ) ) {
 				return getMeasurecandidating( parameters );
+			}
+			if ("candidated".equals( name ) ) {
+				return getMeasurecandidated( parameters );
 			}
 			if ("leaderBoolean".equals( name ) ) {
 				return getMeasureleaderBoolean( parameters );
@@ -1328,6 +1585,9 @@ public class AsFarAsItCan extends CarmaModel {
 				return new String[] { };
 			}
 			if ("candidating".equals( name ) ) {
+				return new String[] { };
+			}
+			if ("candidated".equals( name ) ) {
 				return new String[] { };
 			}
 			if ("leaderBoolean".equals( name ) ) {
@@ -1361,6 +1621,10 @@ public class AsFarAsItCan extends CarmaModel {
 				return toReturn;
 			}
 			if ("candidating".equals( name ) ) {
+				HashMap<String,Class<?>> toReturn = new HashMap<>();
+				return toReturn;
+			}
+			if ("candidated".equals( name ) ) {
 				HashMap<String,Class<?>> toReturn = new HashMap<>();
 				return toReturn;
 			}
@@ -1740,6 +2004,59 @@ public class AsFarAsItCan extends CarmaModel {
 				//@Override
 				public String getName() {
 					return "candidating";
+				}
+			
+			};
+			
+		}
+		
+		private double __MEASURE__candidated( CarmaSystem system ) {
+			final CarmaStore global = system.getGlobalStore();
+			final double now = system.now();
+			final CarmaSystem sys = system;
+			return system.measure( 
+				new BasicComponentPredicate(
+					new CarmaPredicate() {
+						
+						//Here we assume that the following "final" references are available (if needed):
+						//- global: reference to the global store;
+						//- sender: reference to the store of sender;
+						//- receiver: reference to the store of the receiver;				
+						//@Override
+						public boolean satisfy(double now,CarmaStore store) {
+							Boolean __MY__candidated = (Boolean) store.get( "candidated" );
+							Node __MY__loc = store.get( "loc" , Node.class );
+							try{
+								Boolean result = carmaEquals( __MY__candidated , true );
+								return (result==null?false:result);
+							} catch (NullPointerException e) {
+								return false;
+							}
+						}
+					
+						
+					}
+				)
+			)
+			;
+		}
+		
+		
+		private Measure<CarmaSystem> getMeasurecandidated( 
+			Map<String,Object> parameters
+		) {
+			
+		
+			return new Measure<CarmaSystem>() {
+			
+				//@Override
+				public double measure(final CarmaSystem system) {
+					return __MEASURE__candidated( system );
+				}
+		
+				//@Override
+				public String getName() {
+					return "candidated";
 				}
 			
 			};

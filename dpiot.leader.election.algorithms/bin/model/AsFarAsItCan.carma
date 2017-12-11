@@ -40,12 +40,15 @@ component Agent(int zone, real seed){
 		attrib real leaderSeed = seed;
 		attrib bool known = false;
 		attrib bool done = false;
+		attrib bool candidated = false;
 		
 	}
 	behaviour{
 		
 		IDLE = 
-			send[my.right == zone]<ELECTION,my.id,my.seed>{}.ACTIVE
+			send[my.right == zone]<ELECTION,my.id,my.seed>{
+				candidated = true;
+			}.ACTIVE
 			
 			+
 			
@@ -157,10 +160,28 @@ component Agent(int zone, real seed){
 			
 			+
 		
-			send[my.right == zone]<ELECTION,my.id,my.seed>{
-				
+			[pending[0].SEED > my.seed]send[my.right == zone]<ELECTION,my.id,my.seed>{
+				candidated = true;
+			}.ACTIVE
+			
+			+
+			
+			[pending[0].SEED == my.seed && pending[0].ID > my.id]send[my.right == zone]<ELECTION,my.id,my.seed>{
+				candidated = true;
+			}.ACTIVE
+			
+			+
+			
+			[pending[0].SEED < my.seed]send[my.right == zone]<pending[0].MESSAGE,pending[0].ID,pending[0].SEED>{
+				pending = removeFirstElement(pending);
+			}.ACTIVE
+			
+			+
+			
+			[pending[0].SEED == my.seed && pending[0].ID < my.id]send[my.right == zone]<pending[0].MESSAGE,pending[0].ID,pending[0].SEED>{
+				pending = removeFirstElement(pending);
 			}.ACTIVE;
-	}
+		}
 	init{
 		IDLE
 	}
@@ -193,6 +214,7 @@ measure messages = global.messages;
 measure idlez = #{Agent[IDLE] | true};
 measure activez = #{Agent[ACTIVE] | true};
 measure candidating = #{Agent[SENDELECTION] | true};
+measure candidated = #{ * | my.candidated == true};
 
 measure leaderBoolean = min{ my.seed |  my.leaderBool == true};
 measure minseed = min{ my.seed };
